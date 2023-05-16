@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>STZ CC-CEDICT 汉英词典 Chinese English Dictionary</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box; /* 29/Mar/2023: Ref: https://www.w3schools.com/css/css3_box-sizing.asp */
+}
+
+a:link {color:blue; background-color:transparent; text-decoration:none;}
+a:visited {color:blue; background-color:transparent; text-decoration:none;}
+a:hover {color:red; background-color:transparent; text-decoration:underline;}
+
+table {
+  width: 100%;
+  border:1px solid black;
+  border-collapse: collapse;
+}
+
+th, td {
+  /*KIV width: 25%; For CEDICT statistics table */
+  border:1px solid black;
+  border-collapse: collapse;
+  padding: 5px;
+  text-align: left; /* 22/Apr/2023 */
+}
+
+table.cedictMenu, table.cedictMenu th, table.cedictMenu td {
+  width: 100%;
+  border: 0px solid black;
+  border-collapse: collapse;
+  padding: 2px;
+  text-align: center;
+  background-color: lightgrey;
+}
+
+</style>
+
+<script>
+
+// Do in onload --- document.getElementById("inputFileG").addEventListener("change", chgFileName, false); /* 26/Mar/2023. */
+
+function chgFileName() { /* 26/Mar/2023. */
+  if (document.getElementById("inputFileG").files[0] == null) {document.getElementById("showFN").value = "No file chosen 未选择";return;}
+  document.getElementById("showFN").value = document.getElementById("inputFileG").files[0].name;
+}
+
+function readFileG() {
+  //
+  if (!document.getElementById("inputFileG").files[0]) {alert("Please choose a CEDICT-formatted file.\n请选择一个汉英词典CEDICT-格式的文件");return;}
+  if (document.getElementById("showSortedCedictNonNB").value !=0) {
+    var ans = confirm ("This will clear and replace the existing CEDICT data, ok?\n这将清除与取代现有汉英词典(CEDICT)的资料，可以吗？\n\nTo clear and replace with new one => Press [OK].\n要清除及用新的取代 => 按 [OK]。 \n\nTo abort => Press [Cancel]\n要放弃 => 按 [Cancel]。");
+    if (ans == true) {
+	  linesOfNonCedictRec = ""; // re-set.
+	  cedictPinyinAtoZStatAoo.splice(0,cedictPinyinAtoZStatAoo.length); // re-set.
+	  //
+	  // Better also clear any previous display items (optional).
+	  document.getElementById('showLoadedFileStatus').innerHTML = '';
+	  document.getElementById('showOrgCedictAll').value = '';
+	  document.getElementById('showLoadedFileName').innerHTML = '';
+	  document.getElementById('showOrgCedictNB').value = '';
+	  document.getElementById('showOrgCedictNonNB').value = '';
+	  document.getElementById('showSortedCedictNonNB').value = '';
+	  document.getElementById('showSortedCedictAll').value = '';
+	  document.getElementById('cedictStat').innerHTML = '';
+	  document.getElementById("cedictFileInUse").innerHTML = ''; // 03/Apr/2023.
+	  // Reset cedictMenu setting and clear result.
+	  document.getElementById("selSearchType").value = "byPy";
+	  document.getElementById("selMatchType").value = "beginWith";
+	  document.getElementById("txtIpArea").value = "";
+	  document.getElementById("cedictResult").value = "";
+	  document.getElementById("displayA").innerHTML = "";
+	}
+    else{alert("Action aborted!\n已经放弃相关行动！");return;}
+  }
+  //
+  document.getElementById("showOrgCedictAll").value = "Loading [" + document.getElementById("inputFileG").files[0].name + "], please wait ... (for big file it will take longer time to load)."
+  + "\n\n" + "Note-1: The selected CEDICT file will open here (open as text file even if it is a html file).";
+  //
+  document.getElementById("cedictResult").value = "The search results of CEDICT (in original format) will display here. 汉英词典的查询结果将(依照原有格式)呈现于此。"
+  + "\n\n" + "Loading [" + document.getElementById("inputFileG").files[0].name + "], please wait ... (for big file it will take longer time to load)."
+  + "\n\n" + "正在下载所选的文件，请稍候...(字节数量大的文件将花费较长时间下载)";
+  //
+  var fr = new FileReader();
+  //
+  //
+  //
+  fr.onload = function() {
+    document.getElementById("showOrgCedictAll").value = (fr.result).trim();
+    document.getElementById("showLoadedFileName").innerHTML = "现有已下载文件的名称与类别 Name and type of current loaded file: " + document.getElementById("inputFileG").files[0].name; // <------ Use .innerHTML, not .value, because it is <p>....</p>.
+    var strToArr=(fr.result.trim()).split('\n'); // 18-20/Apr/2023: Add .trim() as white spaces infront or behind will affect our program.
+	//                                           // => fr.result.trim() will ensure last line of record is not white spaces.
+	//                                           // => Thus, it ensure the following ---> Check last line of record against the cedictPattern, become possible.
+	//
+	// Check to ensure the loaded file is CEDICT-formatted: (23/Mar/2023)
+	var cedictPattern = /^(\S+)\s(\S+)\s\[([^\[\]]+)\]\s(.+)$/;
+	if (!cedictPattern.test(strToArr[strToArr.length-1])) { // Check last line of record against the cedictPattern.
+	  document.getElementById("showLoadedFileStatus").innerHTML = "根据最后一行的资料判断，现有文件不是汉英词典，电脑程序无法继续运行，请重选。Based on last line of record, Non-CEDICT file detected, program unable to proceed, please choose a CEDICT formatted file to continue.";
+	  //
+	  document.getElementById("cedictResult").value = "The search results of CEDICT (in original format) will display here. 汉英词典的查询结果将(依照原有的格式)呈现于此。"
+	  + "\n\n\n\n" + "Based on last line of record, the loaded file, [" + document.getElementById("inputFileG").files[0].name + "], is not a CEDICT file, program unable to proceed, please choose a CEDICT formatted file to continue."
+	  + "\n\n" + "根据最后一行的资料判断，已经下载的文件并不是汉英词典，电脑程序无法继续运行，请重新选择一个具有汉英词典CEDICT-格式的文件。";
+	  document.getElementById("labelFileInUse").style.display = "none"; // Hide label.
+	  return;
+	  }
+	//
+    document.getElementById("showLoadedFileStatus").innerHTML = "现有文件是汉英词典，详情如下：The CEDICT formatted file open below contains "+strToArr.length+" '\\n'."+" If, and only if, it is a TEXT file, => its contains "+strToArr.length+" lines of records (blank lines included). Else, the number of '\\n' found do not represent the lines of records.";
+	document.getElementById("cedictFileInUse").innerHTML = document.getElementById("inputFileG").files[0].name; // 03/Apr/2023: To record file name of valid CEDICT file currently loaded.
+	document.getElementById("labelFileInUse").style.display = "block"; // Show label.
+	//
+	document.getElementById("cedictResult").value = "The search results of CEDICT (in original format) will display here. 汉英词典的查询结果将(依照原有的格式)呈现于此。"
+	+ "\n\n\n\n" + "The CEDICT formatted file, [" + document.getElementById("inputFileG").files[0].name + "], has been successfully loaded and is ready for use. Please enter a search string to proceed..."
+	+ "\n\n" + "已经成功下载汉英词典，请输入想搜索的字词即可使用...";
+	//
+	// 22/Apr/2023: When new Cedict file loaded, will auto re-set the following so as to use the new loaded data by default.
+	document.getElementById("selCedict").value = "useSortedCedict"; selectCedictToUse();
+	//
+	// Added on 18-19/05/2022, applicable for Cedict only.
+	var strToArrFront = [];
+	var strToArrRear = [];
+	var strToArrSorted = [];
+	var nbCount = 0;
+	//
+	for (i=0;i<strToArr.length;i++) { // For Cedict only, to count the number of NB which are denoted with # at the beginning of each line.
+	  if (strToArr[i].charAt(0) == "#") {nbCount++;continue;}
+	  else {break;}
+	}
+	//
+	// Ref: https://www.w3schools.com/js/js_array_methods.asp
+	// The slice() method slices out a piece of an array into a new array. The slice() method creates a new array.
+	//
+	strToArrFront = strToArr.slice(0,nbCount); // Front of Cedict are all the NB denoted with # at the beginning of each line, => need not sort them.
+    document.getElementById("showOrgCedictNB").value = (strToArrFront.toString()).replace(/\,/gmi,"");
+	//
+	strToArrRear = strToArr.slice(nbCount); // Rear of Cedict are all the dictionary records, => need to sort them.
+    document.getElementById("showOrgCedictNonNB").value = (strToArrRear.toString()).replace(/\,/gmi,"");
+	//
+	// strToArrSorted = sortCedictByPyNum(strToArrRear); // Send strToArrRear for sorting. <------ NB1: Not using this as we want to preserve strToArrRear.
+	var strToArrRear_2 = strToArr.slice(nbCount); // <--- NB2: Create another new strToArrRear_2 array for sorting use, thus original strToArrRear can be preserved.
+	//strToArrSorted = sortCedictByPyNum(strToArrRear_2); // Send strToArrRear_2 for sorting.
+	strToArrSorted = sortCedictByPyNumCatchErr(strToArrRear_2); // Send strToArrRear_2 for sorting. // Added on 18-20/Apr/2023, able to catch error.
+    document.getElementById("showSortedCedictNonNB").value = (strToArrSorted.toString()).replace(/\,/gmi,"");
+	//
+	// Ref: https://www.w3schools.com/js/js_array_methods.asp
+	// Merging (Concatenating) Arrays
+	// The concat() method creates a new array by merging (concatenating) existing arrays.
+	//
+	// Combine back with strToArrFront: => Combine back Remarks and Dictionary Data. => strToArrFront and strToArrSorted are not separated.
+	strToArrSorted = strToArrFront.concat(strToArrSorted);
+    document.getElementById("showSortedCedictAll").value = (strToArrSorted.toString()).replace(/\,/gmi,"");
+	//
+	// ========================================================================
+	//
+	getCedictTADataArrStatistics(strToArrSorted); // Added on 20-23/May/2022. This function do not need strToArrFront and strToArrSorted to be separated. => Separated or not separated, this function can work for both cases.
+	//
+	// ========================================================================
+	//
+  }; // fr.onload end.
+  //
+  //
+  //
+  fr.readAsText(document.getElementById("inputFileG").files[0]); // Can use this, workable, in use.
+}
+
+function sortCedictByPyNum(arrRec) {
+  //
+  // Added on 18-19/05/2022.
+  // NB1: For Cedict pattern, rgxPttn = /^(\S+)\s(\S+)\s\[([^\[\]]+)\]\s(.+)$/ only.
+  // NB2: As No error check is provided here, => if input data do not follow the Cedict pattern, => will encounter error, program might stop or partially failed.
+  //
+  var dictStrArr = arrRec;
+  var rgxPttn, resultA, resultB, x, y;
+  dictStrArr.sort(function(a, b) {
+  //var rgxPttn=/(.+)\/(.+)\/(.+)\/(.+)\/(.+)\/(.+)/; // Don't use global search g
+  rgxPttn = /^(\S+)\s(\S+)\s\[([^\[\]]+)\]\s(.+)$/; // For Cedict pattern only.
+  resultA=rgxPttn.exec(a.trim()); // NB: 18-19/05/2022, must use a.trim() for Cedict rgxPttn = /^(\S+)\s(\S+)\s\[([^\[\]]+)\]\s(.+)$/, if not, will get error. 
+  resultB=rgxPttn.exec(b.trim()); // if match found => resultA, resultB are arrays.
+  x = (resultA[3].trim()).toLowerCase(); // To compare, must use toLowerCase(). Also need to trim() away any white spaces infront or behind string (if any), else sort result will be affected.
+  y = (resultB[3].trim()).toLowerCase(); // resultA[3], resultB[3] are pin yin num.
+  if (x < y) {return -1;}
+  if (x > y) {return 1;}
+  return 0;
+  });
+  return dictStrArr;
+}
+
+function sortCedictByPyNumCatchErr(arrRec) {
+  //
+  // Added on 18-20/Apr/2023.
+  // This Cedict sort function is able to catch errors not conforming to Standard Cedict file, eg: Remarks without #, or non-Cedict-formatted data entered.
+  /*
+  A Standard Cedict file will contain: (1) Remark or NB begin with # (2) Cedict-formatted data.
+  The following is a simple example of Cedict file with 6 NB and 8 lines of Cedict data:
+  ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  # NB1 ...
+  # NB2 ...
+  # 
+  # NB3 ...
+  # 
+  # NB4 ...
+  # NB5 ...
+  # NB6...
+  # 
+  人 人 [ren2] /person/people/CL:個|个[ge4]位[wei4]/
+  仁 仁 [ren2] /humane/kernel/
+  仁愛 仁爱 [ren2 ai4] /benevolence/charity/compassion/
+  仁慈 仁慈 [ren2 ci2] /benevolent/charitable/kind/kindly/kindness/merciful/
+  人道主義 人道主义 [ren2 dao4 zhu3 yi4] /humanism/humanitarian (aid)/
+  人格 人格 [ren2 ge2] /personality/integrity/dignity/
+  人間 人间 [ren2 jian1] /the human world/the earth/
+  人口 人口 [ren2 kou3] /population/people/
+  ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  */
+  // NB1: For Cedict pattern, rgxPttn = /^(\S+)\s(\S+)\s\[([^\[\]]+)\]\s(.+)$/ only.
+  // NB2: As error check is provided here, => if input data do not follow the Cedict pattern, => the error data will be sorted to bottom of array => catch errors.
+  var err = false; // set to identify error found (i.e. err = true), and thus sorted (catch) errors to the bottom of array, => not affecting running of this program.
+  //
+  var dictStrArr = arrRec;
+  var rgxPttn, resultA, resultB, x, y;
+  dictStrArr.sort(function(a, b) {
+  //var rgxPttn=/(.+)\/(.+)\/(.+)\/(.+)\/(.+)\/(.+)/; // Don't use global search g
+  rgxPttn = /^(\S+)\s(\S+)\s\[([^\[\]]+)\]\s(.+)$/; // For Cedict pattern only.
+  resultA=rgxPttn.exec(a.trim()); // NB: 18-19/05/2022, must use a.trim() for Cedict rgxPttn = /^(\S+)\s(\S+)\s\[([^\[\]]+)\]\s(.+)$/, if not, will get error. 
+  resultB=rgxPttn.exec(b.trim()); // if match found => resultA, resultB are arrays.
+  //
+  // 18-20/Apr/2023.
+  // To check and catch error data by sorting them to the bottom of array.
+  //
+  // For non-Cedict data:
+  // To prevent error, if such data do exist, this part of program will allow them to be sorted to the bottom of the array.
+  // If non-Cedict data is found, => no match found, => resultA or resultB or both will be null, we need to take care of such possibility, though very unlikely for pre-defined data.
+  // Solution: Use the following method.
+  //if (resultA==null || resultB==null) {return 0;} // Don't use this, it will fail to sort prperly if a few null occur together or in between.
+  if (resultA==null) {err = true; return 1;}  // Tested ok, able to sort properly for any null situation, eg, Ok if a few null occur together or in between.
+  if (resultB==null) {err = true; return -1;} // First test the resultA and then resultB, 1-by-1, not both at once, and return 1 or -1 accordingly if null occur.
+  //                                          // This design (return 1, then return -1) will sort the non-Cedict data to the bottom of the array.
+  //                                          // To sort the non-Cedict data to the top of the array, => (return -1, then return 1).
+  //                                          // Sort to bottom method is preferred because non-Cedict data will be arranged in original, not in reverse, order.
+  //
+  // For Cedict data:
+  x = (resultA[3].trim()).toLowerCase(); // To compare, must use toLowerCase(). Also need to trim() away any white spaces infront or behind string (if any), else sort result will be affected.
+  y = (resultB[3].trim()).toLowerCase(); // resultA[3], resultB[3] are pin yin num.
+  if (x < y) {return -1;}
+  if (x > y) {return 1;}
+  return 0;
+  });
+  //
+  // 18-20/Apr/2023.
+  if (err) {alert("Errors (some non-Cedict data) found, they are sorted to the bottom of the array without affecting the running of this program.\n发现错误(出现一些非汉英词典的资料)，已经把它们排序到array的尾端，而且没有影响到本程序的运作。\n\nPlease check the bottom data in TextArea denoted as: Sorted [non-NB portion], for details.\n详情可查看注明Sorted [non-NB portion]的TextArea尾端的资料。\n\nThe CEDICT Statistics will also display these (found) non-Cedict data in NB section.\nCEDICT统计数据的注解部份也会显示这些(找到的)非汉英词典的资料。");}
+  //
+  return dictStrArr;
+}
+
+// Make the following two var global on 27/May/2022.
+var linesOfNonCedictRec = "";  // lines of Non Cedict Record, eg, lines of remarks.
+var cedictPinyinAtoZStatAoo = []; // cedict Pinyin A to Z Statistics Array of objects. Not using _, => need not pre-set _ as cedictPinyinAtoZStatAoo[0].
+
+function getCedictTADataArrStatistics(arrRec) { // Added on 22-27/May/2022.
+  //
+  // Use 2 Global var, linesOfNonCedictRec, cedictPinyinAtoZStatAoo[].
+  //
+  // This function do not need strToArrFront and strToArrSorted to be separated, => arrRec can include lines of remarks (which we assume is always = strToArrFront). 
+  // => Separated or not separated, this function can work for both cases.
+  // => Var linesOfNonCedictRec will record all the lines of remarks found.
+  //
+  // NB: Prefer the input arrRec to follow the original CEDICT format:
+  //     => CEDICT = strToArrFront + strToArrRear,
+  //     => Sorted CEDICT = strToArrFront + strToArrSorted.
+  //
+  var dictStrArr = arrRec;
+  // var pyCharList = "_abcdefghijklmnopqrstuvwxyz"; // Why put _ (a non-pinyin alphabet) infront "_abcdefghijklmnopqrstuvwxyz"? Because => (_ at 0 pos), (a at 1 pos), (b at 2 pos), (c at 3 pos), ..., (z at 26 pos). So when Search in pyCharList, any non-pinyin char found can put in _ as others. (Will use other method, thus KIV this design).
+  var pyCharList = "abcdefghijklmnopqrstuvwxyz"; // Not using _.
+  var pyCharListRecorded = ""; // Not using _, => need not pre-set pyCharListRecorded = "_".
+  var pyCharName = "";
+  //alert("Total number of CEDICT dictionary records (including remarks) = " + dictStrArr.length);
+  //
+  var rgxPttn = /^(\S+)\s(\S+)\s\[([^\[\]]+)\]\s(.+)$/; // For Cedict pattern only.
+  var getRec, getPyFirstChar;
+//----> Make this Global:  var linesOfNonCedictRec = "";  // lines of Non Cedict Record, eg, lines of remarks.
+  var linesOfUnPyCedictRec = ""; // lines of Un-Pinyin Cedict Record, => Cedict record contains pinyin alphabet not within a to z, if any?
+  // var cedictPinyinAtoZStatAoo = [{name:"pinyin _", recStartAt:-1, recCount:-1, recEndAt:-1, remark:"First object item of this Aoo, => it is cedictPinyinAtoZStatAoo[0]. Will use other method, thus KIV this design."}];
+//----> Make this Global:    var cedictPinyinAtoZStatAoo = []; // cedict Pinyin A to Z Statistics Array of objects. Not using _, => need not pre-set _ as cedictPinyinAtoZStatAoo[0].
+  var pos1 = -1;
+  var pos2 = -1;
+  //
+  for (var i=0; i<dictStrArr.length; i++) {
+    getRec = (dictStrArr[i].trim()).match(rgxPttn); // NB: 22-23/05/2022, must use .trim() for Cedict rgxPttn = /^(\S+)\s(\S+)\s\[([^\[\]]+)\]\s(.+)$/, if not, will get error. 
+	//
+    if (getRec != null || getRec != undefined) {
+	  getPyFirstChar = getRec[3].charAt(0).toLowerCase();
+	}
+    else {
+	  linesOfNonCedictRec += dictStrArr[i] + "\n"; // Record linesOfNonCedictRec found, such as all lines of remarks, then continue to get next record.
+	  continue;                                    // NB: Must trim() away last "\n" after for-loop ended OR do a linesOfNonCedictRec.trim() before using it.
+	}
+	//
+	pos1 = pyCharList.indexOf(getPyFirstChar);
+	pos2 = pyCharListRecorded.indexOf(getPyFirstChar);
+	//
+	//
+	//
+	if (pos1 != -1) {
+	  //pyCharName = getPyFirstChar + (pos1+1);   <--- Not using this method to do the naming (eg: a1, b2, c3, ..., z26), but pos1 is still useful and thus needed.
+	  pyCharName = "pinyin " + getPyFirstChar; // <--- Use this method to do the naming, easier to understand and straight forward.
+	  //
+	  if (pos2 == -1) { // Object of this pinyin alphabet has not been created, => create the objet and add it as an array item of cedictPinyinAtoZStatAoo[].
+        cedictPinyinAtoZStatAoo.push({ // Create object and add as array item using push().
+        name:pyCharName,     // Record name of this pinyin alphabet object.
+        recStartAt:i+1,      // Record the very first occurance of this pinyin alphabet, in term of i+1, => occurred at which line of record number.
+        recCount:1,          // First record, => count 1.
+        recEndAt:i+1,        // Use i+1 to record recEndAt (it will change according to number of records which begins with the similar pinyin alphabet).
+        //remark:"Nil"       // KIV this.
+        });
+	    pyCharListRecorded += getPyFirstChar; // Record this => created and added the object as array item of cedictPinyinAtoZStatAoo[{}, {}, ...,{}].
+      }
+      //
+	  else { // As Object of this pinyin alphabet has been created, => just need to update its record.
+        // cedictPinyinAtoZStatAoo[cedictPinyinAtoZStatAoo.length-1].name = pyCharName; // No change needed, it is an existing pinyin alphabet object, => need not re-create its name.
+        // cedictPinyinAtoZStatAoo[cedictPinyinAtoZStatAoo.length-1].recStartAt = cedictPinyinAtoZStatAoo[cedictPinyinAtoZStatAoo.length-1]; // No change needed because this is for keeping the very first occurance of this pinyin alphabet record, => need not re-record here.
+        cedictPinyinAtoZStatAoo[cedictPinyinAtoZStatAoo.length-1].recCount += 1; // Every time a pinyin alphabet found to be similar to existing one, => just add 1 here, => counting.
+        cedictPinyinAtoZStatAoo[cedictPinyinAtoZStatAoo.length-1].recEndAt = i+1;  // Every time a pinyin alphabet found to be similar to existing one, => just record its line of record number, i.e. record the i+1 here, it will change according to number of records which begins with the similar pinyin alphabet.
+        // cedictPinyinAtoZStatAoo[cedictPinyinAtoZStatAoo.length-1].remark = "Nil"; // No change, => need not re-remark here. KIV this.
+	  }
+	}
+	//
+	//
+	//
+	else { // For pos1 = pyCharList.indexOf(getPyFirstChar) and pos1 == -1, => getPyFirstChar is not within a to z, although unlikely, but need to prevent it.
+	  alert("The first character of Record number = " + i + " = " + dictStrArr[i] + " may contains pinyin alphabet not within a to z? \n\nPlease check, it might cause error results or stop this program!\n\nThe record will be stored in var linesOfUnPyCedictRec, but it will not be further processed by this program if it is still manage to run after encouter this unlikely situation.");
+	  //linesOfUnPyCedictRec += dictStrArr[i] + "\n"; // Record linesOfUnPyCedictRec found, if any.
+	  linesOfUnPyCedictRec += "Record number = " + i + " = " + dictStrArr[i] + "\n"; // Record linesOfUnPyCedictRec found, if any. 23/Mar/2023.
+	}
+  }
+  //
+  linesOfNonCedictRec = linesOfNonCedictRec.trim(); // Must trim() away last "\n" after for-loop ended.
+  //
+  document.getElementById("cedictStat").innerHTML = showAboutCedict(); // Show the result.
+  //
+  if (linesOfUnPyCedictRec != "") {alert("Some linesOfUnPyCedictRec found which will not be processed by this program are as shown below:\n\n" + linesOfUnPyCedictRec);} // 23/Mar/2023.
+}
+
+function showAboutCedict() { // Added on 27/May/2022.
+  //
+  if (document.getElementById('cedictStat').innerHTML != "") {return "";}
+  //
+  // Use 2 Global var, linesOfNonCedictRec, cedictPinyinAtoZStatAoo[].
+  //
+  // After getting the basic statistics, show the results in table format:
+  //var cedictFileName=document.getElementById("inputFileG").files[0].name; // Get file name, added on 31/May/2022.
+  var cedictFileName=document.getElementById("cedictFileInUse").innerHTML; // Get file name, change to this method, 03/Apr/2023.
+  if (cedictFileName=="") {return "";} // No file name, => nothing to show, 03/Apr/2023.
+  //
+  var htmlTable="";
+  var numOfLinesOfRemark = (linesOfNonCedictRec.split("\n")).length; // 16/Apr/2023: Special case, if linesOfNonCedictRec="", .split("\n") will still give 1.
+  if (linesOfNonCedictRec=="") {numOfLinesOfRemark = 0;}             //              So, if this special case occur, just re-set numOfLinesOfRemark=0.
+  var totalNumOfCedictData = 0; // Excluding lines of remarks.
+  htmlTable+='<div style="overflow-x:auto;">'; // <!-- Must and added this <div> container for table below. -->
+    htmlTable+='<table id="tb1" style="width:95%;">';
+	  //
+      htmlTable+='<tr>';
+	    htmlTable+='<td colspan="4">'+(linesOfNonCedictRec.replace(/\n/gm,"<br>"))+'</td>'; // linesOfNonCedictRec = all the remark # lines in CEDICT file.
+	  htmlTable+='</tr>';
+	  //
+      htmlTable+='<tr>';
+	    htmlTable+='<td colspan="4" style="text-align:center;padding:10px;">Statistics of the CEDICT file (' + cedictFileName + ') after processing and sorting<br>( By: https://www.selftalkzone.com/ )</td>';
+	  htmlTable+='</tr>';
+	  //
+      htmlTable+='<tr class="headerRow">'; // As this is the header row, so set class="headerRow", it is optional but useful for CSS.
+	    htmlTable+='<th style="width:23%;">Name</th>';
+	    htmlTable+='<th style="width:24%;">Record Start At</th>';
+	    htmlTable+='<th style="width:24%;">Record End At</th>';
+	    htmlTable+='<th style="width:24%;">Number Of Records</th>';
+	  htmlTable+='</tr>';
+	  //
+	  // For all lines of remarks:
+      htmlTable+='<tr>';
+	    htmlTable+='<td>remark #</td>';
+	    //htmlTable+='<td>1</td>'; // <--- Remark line 1 start at line 1 of CEDICT file.
+		if (linesOfNonCedictRec=="") {htmlTable+='<td>0</td>';}	else {htmlTable+='<td>1</td>';} // 16/Apr/2023: Include Special case, if linesOfNonCedictRec="".
+	    htmlTable+='<td>'+numOfLinesOfRemark+'</td>';
+	    htmlTable+='<td>'+numOfLinesOfRemark+'</td>';
+	  htmlTable+='</tr>';
+	  //
+	  // For all lines of CEDICT data, pinyin a to z:
+      for (var n=0; n<cedictPinyinAtoZStatAoo.length; n++) {
+      htmlTable+='<tr>';
+	    htmlTable+='<td>'+cedictPinyinAtoZStatAoo[n].name+'</td>';
+	    htmlTable+='<td>'+cedictPinyinAtoZStatAoo[n].recStartAt+'</td>';
+	    htmlTable+='<td>'+cedictPinyinAtoZStatAoo[n].recEndAt+'</td>';
+	    htmlTable+='<td>'+cedictPinyinAtoZStatAoo[n].recCount+'</td>';
+	  htmlTable+='</tr>';
+	  totalNumOfCedictData += cedictPinyinAtoZStatAoo[n].recCount;
+      }
+	  //
+	  // After for-loop ended, we can get totalNumOfCedictData:
+      htmlTable+='<tr>';
+	    htmlTable+='<td colspan="4" style="text-align:center;">Total records in CEDICT file (including remarks) = ' + (numOfLinesOfRemark + totalNumOfCedictData) + '</td>';
+	  htmlTable+='</tr>';
+	  //
+      htmlTable+='<tr>';
+	    htmlTable+='<td colspan="4" style="text-align:center;">Total records in CEDICT file (excluding remarks) = ' + totalNumOfCedictData + '</td>';
+	  htmlTable+='</tr>';
+	  //
+      htmlTable+='<tr>';
+	    htmlTable+='<td colspan="4" style="text-align:center;">NB: Please take note that i, u, v are actually not used in pinyin, (though v might be used to represent ü).</td>'; // Added on 31/May/2022.
+	  htmlTable+='</tr>';
+	//
+    htmlTable+='</table>';
+  htmlTable+='</div>';
+  //
+  return htmlTable;
+}
+//
+// ========================================================================
+
+// Added on 30/Mar/2023.
+function onOffAboutPg() {
+  var eleAbout=document.getElementById("aboutPg");
+  //
+  // Not using this method as large file involved, it will take time to hide and show element/file (it need to remove or place back element/file from html document layout).
+  //if (eleAbout.style.display=="block") {eleAbout.style.display="none";}
+  //else {eleAbout.style.display="block"}
+  //
+  // As large file involved, to hide and show element/file, better use visibility method for instant response.
+  // NB: Disadvantage is that the hidden element/file will take up space on the page (as it will not be removed from html document layout but changed its visibility).
+  if (eleAbout.style.visibility=="visible") {eleAbout.style.visibility="hidden";setTimeout(function(){window.scrollBy(0,-900000);},500);}
+  else {eleAbout.style.visibility="visible";}
+}
+
+// 08/Apr/2023
+function setSearchType() {
+  //
+  //var sel=document.getElementById("selSearchType").selectedIndex; // 08/Apr/2023 KIV index number (0,1,2,3,...) method.
+  var sel=document.getElementById("selSearchType").value; // Better use option value/name method.
+  var elemBpmf=document.getElementById("zyTxt");
+  //
+  if (sel=="byZy")
+    {
+    elemBpmf.style.display="block"; // Show Zy.
+    }
+  else
+    {
+    elemBpmf.style.display="none"; // Hide Zy.
+    }
+  //KIV---document.getElementById("txtIpArea").value=""; // Better reset.
+  document.getElementById("txtIpArea").focus();
+}
+
+// 08/Apr/2023
+function getSearchType() {return document.getElementById("selSearchType").value;}
+
+// 08/Apr/2023
+function setMatchType() {document.getElementById("txtIpArea").focus();} // Need not reset.
+
+// 08/Apr/2023
+function getMatchType() {
+  var hSetting;
+  var tSetting;
+  //var sel=document.getElementById("selMatchType").selectedIndex; // 08/Apr/2023 KIV index number (0,1,2,3,...) method.
+  var sel=document.getElementById("selMatchType").value; // Better use option value/name method.
+  switch(sel)
+	{
+	/*
+	case 0:	hSetting="";tSetting=".*";break;
+	case 1:	hSetting="";tSetting="";break;
+	case 2:	hSetting=".*";tSetting=".*";break;
+	case 3:	hSetting=".*";tSetting="";break;
+	*/
+	case "beginWith": hSetting="";tSetting=".*";break;
+	case "matchWith": hSetting="";tSetting="";break;
+	case "containWith": hSetting=".*";tSetting=".*";break;
+	case "endWith":	hSetting=".*";tSetting="";break;
+	}
+  return [hSetting,tSetting];
+}
+
+// 16/Apr/2023
+function selectCedictToUse() {
+  // Reset all
+  document.getElementById("showSortedCedictNonNB").style.background = "";
+  document.getElementById("showOrgCedictNonNB").style.background = "";
+  document.getElementById("showSampleCedict").style.background = "";
+  document.getElementById("showTemporaryCedict").style.background = "";
+  //
+  //var sel=document.getElementById("selCedict").selectedIndex; // KIV index number (0,1,2,3,...) method.
+  var sel=document.getElementById("selCedict").value; // Better use option value/name method.
+  switch(sel)
+	{
+	case "useSortedCedict": document.getElementById("showSortedCedictNonNB").style.background = "lime";break;
+	case "useUnsortedCedict": document.getElementById("showOrgCedictNonNB").style.background = "lime";break;
+	case "useSampleCedict": document.getElementById("showSampleCedict").style.background = "lime";break;
+	case "useTemporaryCedict": document.getElementById("showTemporaryCedict").style.background = "lime";break;
+	}
+  //
+  // 22/Apr/2023.
+  var selIdx=document.getElementById("selCedict").selectedIndex;
+  // Record the selection.
+  document.getElementById("theSelectedCedict").innerHTML = document.getElementById("selCedict").options[selIdx].text;
+  // Show the selection (and clear all existing cedictResult on display).
+  //KIVdocument.getElementById("cedictResult").value = "";
+  //document.getElementById("displayA").innerHTML = "<p><span style='background-color:lime;'>[" + document.getElementById("selCedict").options[selIdx].text + "]</span> --- 查询 (To Search)</p>";
+  document.getElementById("displayA").innerHTML = "<p>已下载的词典 (Loaded Cedict): <span style='color:lime;'>" + document.getElementById("cedictFileInUse").innerHTML + "</span><br /><br /><span style='background-color:lime;'>[" + document.getElementById("selCedict").options[selIdx].text + "]</span> --- 查询 (To Search)</p>";
+}
+
+// 16/Apr/2023
+function getCedictToUse() {return document.getElementById("selCedict").value;}
+
+// 08/Apr/2023
+function getSearchTxt()
+{
+var currSearchStr=document.getElementById("txtIpArea").value.trim(); // trim away front and back spaces (if any).
+if (currSearchStr.length !=0)
+	{
+	cedictSearch(currSearchStr);
+	}
+else
+	{
+	 alert("Sorry, please input some text. 抱歉，请输入一些文字。");
+	}
+}
+
+// 08,12/Apr/2023
+function enter2submit(event) {
+  var keyPress = event.key;
+  if (keyPress == "Enter") {getSearchTxt();}
+  //Ref: https://www.w3schools.com/jsref/event_key_key.asp
+}
+
+// 08/Apr/2023
+function cedictSearch(strX) {
+  var str=strX;
+  var cedictType=getCedictToUse(); // 16/Apr/2023.
+  var searchType=getSearchType();
+  var matchType=getMatchType();
+  var hSetting=matchType[0];
+  var tSetting=matchType[1];
+  //
+  var ipStr=str.toLowerCase();
+  //---ipStr=addRgxEsp(ipStr);
+  var searchStr="";
+  var ipStrArr=ipStr.split(/[\s]+/);
+  if (searchType=="byPy")
+    {
+    searchStr="";
+    for (var j=0; j<ipStrArr.length; j++)
+      {
+      if (/[1-5]$/.test(ipStrArr[j]))
+        {
+        searchStr += ipStrArr[j]+" ";
+        }
+      else
+        {
+        searchStr += ipStrArr[j]+"[1-5]"+" ";
+        }
+      }
+    searchStr=searchStr.replace(/\s$/,"");
+    searchStr="^(\\S+)\\s(\\S+)\\s\\[("+hSetting+searchStr+tSetting+")\\]\\s(.+)$";
+    }
+  if (searchType=="byFt")
+    {
+    searchStr="";
+    for (var j=0; j<ipStrArr.length; j++)
+      {
+      searchStr += ipStrArr[j];
+      }
+    searchStr="^("+hSetting+searchStr+tSetting+")\\s(\\S+)\\s\\[([^\\[\\]]+)\\]\\s(.+)$";
+    }
+  if (searchType=="byJt")
+    {
+    searchStr="";
+    for (var j=0; j<ipStrArr.length; j++)
+      {
+      searchStr += ipStrArr[j];
+      }
+    searchStr="^(\\S+)\\s("+hSetting+searchStr+tSetting+")\\s\\[([^\\[\\]]+)\\]\\s(.+)$";
+    }
+  if (searchType=="byEng")
+    {
+    searchStr="";
+    for (var j=0; j<ipStrArr.length; j++)
+      {
+      searchStr += ipStrArr[j]+" ";
+      }
+    searchStr=searchStr.replace(/\s$/,"");
+    if (searchStr.length==1){searchStr=" "+searchStr+" ";}
+    searchStr="^(\\S+)\\s(\\S+)\\s\\[([^\\[\\]]+)\\]\\s(\/"+hSetting+searchStr+tSetting+"\/)$";
+    }
+  if (searchType=="byZy")
+    {
+    searchStr="";
+    for (var j=0; j<ipStrArr.length; j++)
+      {
+      if (/[1-5]$/.test(ipStrArr[j]))
+        {
+        searchStr += ipStrArr[j]+" ";
+        }
+      else
+        {
+        searchStr += ipStrArr[j]+"[1-5]"+" ";
+        }
+      }
+    searchStr=searchStr.replace(/\s$/,"");
+    searchStr="^(\\S+)\\s(\\S+)\\s\\[("+hSetting+searchStr+tSetting+")\\]\\s(.+)$";
+    }
+  //---var pattnManyWcard=/(\.\*)+/gmi;
+  //---searchStr=searchStr.replace(pattnManyWcard,".*");
+  //
+  rgxSearchPttn=null; // Added on 31/May/2022. Re-set this rgxSearchPttn object to null before re-create it again.
+  rgxSearchPttn = new RegExp(searchStr,"gmi"); // Added on 31/May/2022. Re-create rgxSearchPttn object.
+  //
+  var resultArr;
+  //
+  var tAData=""; // 16/Apr/2023.
+  if (cedictType=="useUnsortedCedict") {tAData = document.getElementById("showOrgCedictNonNB").value;} // original non-sorted data
+  if (cedictType=="useSortedCedict") {tAData = document.getElementById("showSortedCedictNonNB").value;} // sorted data
+  if (cedictType=="useSampleCedict") {tAData = document.getElementById("showSampleCedict").value;} // sample data
+  if (cedictType=="useTemporaryCedict") {tAData = document.getElementById("showTemporaryCedict").value;} // temporary data
+  //
+  resultArr = tAData.match(rgxSearchPttn);
+  //
+  if (resultArr==null || resultArr==undefined) {
+  document.getElementById("cedictResult").value = "没找到任何解释词条。(No record found.)";
+  document.getElementById("displayA").innerHTML = "<p>已下载的词典 (Loaded Cedict): <span style='color:lime;'>" + document.getElementById("cedictFileInUse").innerHTML + "</span><br /><br /><span style='background-color:lime;'>[" + document.getElementById("theSelectedCedict").innerHTML + "]</span> --- 查询 (Search for): ["+str+"] --- "+rgxSearchPttn+"</p>" + "<p>没找到任何解释词条。(No record found.)<br /><br />请确认你已经下载和打开了汉英词典CEDICT-格式的文件，或是你有根据所选的查询方式输入所要查找的字词。 (Please make sure you have downloaded and opened the CEDICT formatted file, or you have input a valid search string according to the search type chosen.)</p>"; // 24/Apr/2023.
+  }
+  else {
+  //getResultAoo(resultArr); // 12/Apr/2023.
+  resultArr = getResultAooAndChkErr(resultArr,str,searchType,rgxSearchPttn); // 12/Apr/2023. 05/May/2023. 10/May/2023: Add rgxSearchPttn.
+  //document.getElementById("cedictResult").value = resultArr.toString();
+  document.getElementById("cedictResult").value = (resultArr.toString()).replace(/\,/gmi,"\n"); // As rgxDictPttn did not extract "\n" "\r", so add this.
+  document.getElementById("displayA").innerHTML = "<p>已下载的词典 (Loaded Cedict): <span style='color:lime;'>" + document.getElementById("cedictFileInUse").innerHTML + "</span><br /><br /><span style='background-color:lime;'>[" + document.getElementById("theSelectedCedict").innerHTML + "]</span> --- 查询 (Search for): ["+str+"] --- "+rgxSearchPttn+"</p>" + "<p>找到的解释词条总数 (Number of records found) = " + resultArr.length + "</p>"; // 24/Apr/2023.
+  document.getElementById("displayA").innerHTML += formFixTableResult();
+  }
+}
+
+var resultAoo = []; // Use global var, 12/Apr/2023.
+
+function getResultAoo(arrX) { // 12/Apr/2023.
+  // NB1: To convert and keep resultArr in global variable resultAoo, => process once for use in various output formats if needed.
+  // NB2: Need to use global variable resultAoo.
+  resultAoo = []; // Reset to clear old values before use, 12/Apr/2023.
+  var resultArr = arrX;
+  var cedictPattern = /^(\S+)\s(\S+)\s\[([^\[\]]+)\]\s(.+)$/;
+  var rgxExecArrResult;
+  for (var i=0; i<resultArr.length; i++) {
+    rgxExecArrResult = cedictPattern.exec(resultArr[i]);
+    resultAoo.push({ // Create object and add as array item using push().
+	//all:rgxExecArrResult[0], // KIV to save space, need not record this, can use ft, jt, pyN and eng to combine back.
+    ft:rgxExecArrResult[1],
+    jt:rgxExecArrResult[2],
+    pyN:rgxExecArrResult[3],
+    eng:rgxExecArrResult[4]
+    });
+  }
+}
+
+function getResultAooAndChkErr(arrX, strX, searchTypeX, rgxSearchPttnX) { // 12/Apr/2023. 05/May/2023. 10/May/2023: Add rgxSearchPttnX.
+  // NB1: To convert and keep resultArr in global variable resultAoo, => process once for use in various output formats if needed.
+  // NB2: Need to use global variable resultAoo.
+  resultAoo = []; // Reset to clear old values before use, 12/Apr/2023.
+  var resultArr = arrX;
+  var rgxSearchPttn = rgxSearchPttnX;
+  var str = strX.trim(); // 05/May/2023.
+  var searchType = searchTypeX; // 05/May/2023.
+  var resultArrCorrected = []; // 05/May/2023.
+  var resultArrOmitted = []; // 05/May/2023. Actually resultArrOmitted is optional. Currently we only record it but not use or return it.
+  var cedictPattern = /^(\S+)\s(\S+)\s\[([^\[\]]+)\]\s(.+)$/;
+  var rgxExecArrResult;
+  for (var i=0; i<resultArr.length; i++) {
+    rgxExecArrResult = cedictPattern.exec(resultArr[i]);
+	// To check error, if resultArr is correct, it should contain the search string "str" in the matched records, else omit the records.
+	// NB1: We will not check the case for searchType=="byEng" where errors if exist might not affect much. And searchType=="byZy" can use searchType=="byPy".
+	// NB2: We found out we can not check the case for searchType=="byPy" when searching multi-character word.
+	//      This is because say we key in "hao ma", the system will search hao[1-5] ma[1-5]
+	//      i.e. if searchType is "containing", system rgxSearchPttn will search /^(\S+)\s(\S+)\s\[(.*hao[1-5] ma[1-5].*)\]\s(.+)$/gim
+	//      As we key in str = "hao ma", but the search results will be within the range of "hao[1-5] ma[1-5]",
+	//      => str = "hao ma" will be different from "hao[1-5] ma[1-5]", => rgxExecArrResult[3].toLowerCase().indexOf(str.toLowerCase()) will always == -1,
+	//      => we can not check the case for searchType=="byPy" in searching of multi-character word.
+	// NB3: However we can check the case for searchType=="byPy" when searching single-character word, and we should do so as error matches are likely in
+	//      such situation. (Added on: 12/May/2023)
+	//      But how to check the case for searchType=="byPy" when searching single-character word?
+	//      The idea is simple, in CEDICT format, a multi-character word (or multi-character 'pin yin' word) will have a space between each character,
+	//      for example, 好吗 or 你好吗 in pin yin are (hao ma), (ni hao ma), or (hao3 ma2), (ni3 hao3 ma2), => they all have a space between each character,
+	//      => when searchType=="byPy", we can check the search string "str" using str.indexOf(' ') to see whether it contains a space, as we have trim()
+	//      the "str" in str = strX.trim(), so if it still contains space or spaces, => it is a multi-character 'pin yin' word, else it is single-character.
+	//      str.indexOf(' ')==-1, => there is no space found in "str", => it is a single-character 'pin yin' word, => can and should check for error matches.
+	//      str.indexOf(' ')!=-1, => there is space or spaces found in "str", => it is a multi-character 'pin yin' word, => can not check.
+	// NB4: Actually resultArrOmitted is optional. Currently we only record it but not use or return it.
+	if (searchType=="byFt") { if (rgxExecArrResult[1].toLowerCase().indexOf(str.toLowerCase())==-1) {resultArrOmitted.push(resultArr[i]);continue;} }
+	if (searchType=="byJt") { if (rgxExecArrResult[2].toLowerCase().indexOf(str.toLowerCase())==-1) {resultArrOmitted.push(resultArr[i]);continue;} }
+	//if (searchType=="byPy") { if (rgxExecArrResult[3].toLowerCase().indexOf(str.toLowerCase())==-1) {resultArrOmitted.push(resultArr[i]);continue;} }
+	if (searchType=="byPy" && str.indexOf(' ')==-1) { if (rgxExecArrResult[3].toLowerCase().indexOf(str.toLowerCase())==-1) {resultArrOmitted.push(resultArr[i]);continue;} } // 12/May/2023.
+    resultAoo.push({ // Create object and add as array item using push().
+	//all:rgxExecArrResult[0], // KIV to save space, need not record this, can use ft, jt, pyN and eng to combine back.
+    ft:rgxExecArrResult[1],
+    jt:rgxExecArrResult[2],
+    pyN:rgxExecArrResult[3],
+    eng:rgxExecArrResult[4]
+    });
+	resultArrCorrected.push(resultArr[i]); // 05/May/2023. Record the corrected array.
+  }
+  return resultArrCorrected; // 05/May/2023. Return the corrected array.
+}
+
+function formFixTableResult() { // 12/Apr/2023.
+  // NB: Need to use global variable resultAoo.
+  var htmlTable = '';
+  htmlTable += '<div style="overflow-x:auto;">';
+  htmlTable += '<table id="myTable" style="width:100%">';
+  //
+    htmlTable += '<tr class="headerRow" style="width:100%;">'; // As this is the header row, so set class="headerRow", it is optional but useful for CSS.
+	  htmlTable += '<th style="width:7%">序号(SN)</th>';
+	  htmlTable += '<th style="width:11%">繁体(TRAD)</th>';
+	  htmlTable += '<th style="width:11%">简体(SIMP)</th>';
+	  htmlTable += '<th style="width:11%">拼音数(PYN)</th>';
+	  htmlTable += '<th style="width:60%">英语(ENG)</th>';
+	htmlTable += '</tr>';
+	//
+	for (var i=0; i<resultAoo.length; i++) {
+	htmlTable += '<tr>';
+	  htmlTable += '<td>'+(i+1)+'</td>';
+	  htmlTable += '<td>'+resultAoo[i].ft+'</td>';
+	  htmlTable += '<td>'+resultAoo[i].jt+'</td>';
+	  htmlTable += '<td>'+resultAoo[i].pyN+'</td>';
+	  htmlTable += '<td>'+resultAoo[i].eng+'</td>';
+	htmlTable += '</tr>';
+	}
+  //
+  htmlTable += '</table>';
+  htmlTable += '</div>';
+  return htmlTable;
+}
+
+function testUsingSampleCedict(inLang) {
+  var lang = inLang;
+  //
+  if (lang == "inChn") {
+    document.getElementById("selCedict").selectedIndex = 2; selectCedictToUse();
+	document.getElementById("cedictResult").value = "已经选用了做为示范样本的汉英词典（只有少许拼音a的资料），请输入想搜索的字词即可使用...\n\n例如用拼音找： a 或 a3 或 a yi 或 an1 ding4 或 ao mi4\n\n\n\n注：用户可以卷动屏幕视窗至本文件的尾端，看看被选择使用的文字区TextArea背景已经被转变成亮绿色。";
+  }
+  //
+  if (lang == "inEng") {
+    document.getElementById("selCedict").selectedIndex = 6; selectCedictToUse();
+	document.getElementById("cedictResult").value = "Sample Cedict selected (with some pin yin \"a\" records), it is ready for use. Please enter a search string to proceed...\n\nFor example, use pin yin (Find by PY) to find: a / a3 / a yi / an1 ding4 / ao mi4\n\n\n\nNB: User can scroll down to bottom of this file to see the selected TextArea being changed to bright green colour.";
+  }
+}
+
+function emptyTextArea(emptyTAcodeX) { // 14-15/05/2023.
+  var emptyTAcode = emptyTAcodeX;
+  var emptiedMsg = "You have chosen to empty the CEDICT data kept in this TextArea, if you want to view or use them again, you have to reload the relevant file. 你已经选择清空曾经收存在此文字区的汉英词典资料，如果你想要查看或使用它们，你需要重新下载相关的文件。";
+  if (emptyTAcode == "emptyTA125") {
+    document.getElementById('showOrgCedictAll').value = emptiedMsg;
+    document.getElementById('showOrgCedictNB').value = emptiedMsg;
+    document.getElementById('showSortedCedictAll').value = emptiedMsg;
+    }
+  if (emptyTAcode == "emptyTA3") {
+    document.getElementById('showOrgCedictNonNB').value = emptiedMsg;
+	}
+  if (emptyTAcode == "emptyTA4") {
+    document.getElementById('showSortedCedictNonNB').value = emptiedMsg;
+	}
+}
+
+/* 25/Apr/2023: onbeforeunload Event
+============================================================================================
+
+https://www.w3schools.com/jsref/event_onbeforeunload.asp
+
+Definition and Usage
+The onbeforeunload event occurs when a document is about to be unloaded.
+
+This event allows you to display a message in a confirmation dialog box to inform the user whether he/she wants to stay or leave the current page.
+
+The default message that appears in the confirmation box, is different in different browsers. However, the standard message is something like "Are you sure you want to leave this page?".
+
+This message cannot be removed, unless you call preventDefault() on the event.
+
+============================================================================================
+
+The followings are copy from:
+
+Ref: https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event
+
+In this example a page listens for changes to a text input. If the element contains a value, it adds a listener for beforeunload. If the element is empty, 
+it removes the listener:
+
+const beforeUnloadListener = (event) => {
+  event.preventDefault();
+  return (event.returnValue = "");
+};
+
+const nameInput = document.querySelector("#name");
+
+nameInput.addEventListener("input", (event) => {
+  if (event.target.value !== "") {
+    addEventListener("beforeunload", beforeUnloadListener, { capture: true });
+  } else {
+    removeEventListener("beforeunload", beforeUnloadListener, {
+      capture: true,
+    });
+  }
+});
+
+============================================================================================
+*/
+
+const beforeUnloadListener = function(event) { // 28/Apr/2023: Usually broswers will ignore event.returnValue and just prompt: "Changes you made may not be saved."
+  event.preventDefault();                      //              Please take note: the onbeforeunload event may ignore by mobile phone apps.
+  return (event.returnValue = "Users have to save the temporary Cedict data they created if they want to re-use them later. Please note that: The data input by you may, have not been saved yet? 用户输入的临时汉英词典资料若想以后再用，必须自行把这些资料存档。请注意：你输入的资料可能还没有存档？");
+};
+
+window.addEventListener("load", function() { // 28/Apr/2023: Add Event Listener to window so that onload it will do the followings, especially addEventListener to textarea (of user input Cedict).
+
+const tAofUserInputCedict = document.getElementById("showTemporaryCedict"); // 25/Apr/2023: NB: Must make sure textarea load first before assign this, else error. Or use onload to do it.
+
+tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur instead of change (because if window sudden close, both equally can't handle).
+  if (event.target.value !== "") {
+    addEventListener("beforeunload", beforeUnloadListener);     // As it is optional, so take away { capture: true }.
+	document.getElementById("remindUser").style.display = "block";
+  }
+  else {
+    removeEventListener("beforeunload", beforeUnloadListener);  // As it is optional, so take away { capture: true }.
+	document.getElementById("remindUser").style.display = "none";
+  }
+});
+
+});
+
+</script>
+
+</head>
+
+<body onload='document.getElementById("inputFileG").addEventListener("change", chgFileName, false);'>
+
+<h2 style="text-align:center;font-size:20px;color:magenta;text-decoration:underline;">汉英词典 CC-CEDICT<br />Chinese English Dictionary<br /></h2>
+
+<div style="overflow-x:auto;"> <!-- Must and added this <div> container for table below. -->
+<table class="cedictMenu"> <!-- 22/Mar/2023 -->
+   <tr>
+      <td>
+         <input type="button" value="选文件Choose" onclick="document.getElementById('inputFileG').click();"><input type="text" name="showFN" id="showFN" size="16" value="No file chosen 未选择" readonly><input type="button" value="打开Open" onclick="readFileG()">
+		 <input type="file" name="inputFileG" id="inputFileG" style="display:none;"> <!-- Must keep this input element for file input but not display it. 26/Mar/2023. -->
+      </td>
+   </tr>
+   <tr>
+      <td>
+         <select name="selSearchType" id="selSearchType" onChange="setSearchType()">
+            <option value="byPy" selected>用拼音找</option>
+            <option value="byFt">用繁体找</option>
+            <option value="byJt">用简体找</option>
+            <option value="byEng">用英文找</option>
+            <!--KIV<option value="byZy">用注音找</option>-->
+            <option value="byPy">Find by PY</option>
+            <option value="byFt">Find by Big5</option>
+            <option value="byJt">Find by GB</option>
+            <option value="byEng">Find by Eng</option>
+            <!--KIV<option value="byZy">Find by ZY</option>-->
+         </select><select name="selMatchType" id="selMatchType" onChange="setMatchType()">
+            <option value="beginWith" selected>开始为..的字</option>
+            <option value="matchWith">只配对..的字</option>
+            <option value="containWith">包含有..的字</option>
+            <option value="endWith">结尾为..的字</option>
+            <option value="beginWith">Begin With</option>
+            <option value="matchWith">Match With</option>
+            <option value="containWith">Containing</option>
+            <option value="endWith">End With</option>
+         </select><input type="text" name="txtIpArea" id="txtIpArea" size="10" onkeydown="enter2submit(event)"><input type="button" value="找Go" name="btSubmit" onClick="getSearchTxt()"><input type="button" onClick="document.getElementById('txtIpArea').value='';document.getElementById('txtIpArea').focus()" value="X" name="btClear"><a href="#aboutPg"><input type="button" value="关于About" name="btnAbout" onclick="onOffAboutPg()"></a>
+      </td>
+   </tr>
+   <tr><!-- KIV byZy -->
+      <td id="zyTxt" style="display:none;">
+		<font color="#0000FF" size="3"><span style="background-color: #FFFF00">
+		<span onclick="inputBpmf('ㄅ');" title="声母：ㄅ，b，玻">ㄅ</span>
+		<span onclick="inputBpmf('ㄆ');" title="声母：ㄆ，p，坡">ㄆ</span> <!-- Added on 07/Dec/2022. Change all <a> to <span>, => Use span span:hover {...} CSS to style. -->
+		<span onclick="inputBpmf('ㄇ');" title="声母：ㄇ，m，摸">ㄇ</span>
+		<span onclick="inputBpmf('ㄈ');" title="声母：ㄈ，f，佛">ㄈ</span></span> <!-- Added on 07/Dec/2022. NB: Is is a <span> within <span> structure. -->
+		<span style="background-color: #00FF00">
+		<span onclick="inputBpmf('ㄉ');" title="声母：ㄉ，d，得">ㄉ</span>
+		<span onclick="inputBpmf('ㄊ');" title="声母：ㄊ，t，特">ㄊ</span>
+		<span onclick="inputBpmf('ㄋ');" title="声母：ㄋ，n，讷">ㄋ</span>
+		<span onclick="inputBpmf('ㄌ');" title="声母：ㄌ，l，勒">ㄌ</span></span>
+		<span style="background-color: #FFFF00">
+		<span onclick="inputBpmf('ㄍ');" title="声母：ㄍ，g，哥">ㄍ</span>
+		<span onclick="inputBpmf('ㄎ');" title="声母：ㄎ，k，科">ㄎ</span>
+		<span onclick="inputBpmf('ㄏ');" title="声母：ㄏ，h，喝">ㄏ</span></span>
+		<span style="background-color: #00FF00">
+		<span onclick="inputBpmf('ㄐ');" title="声母：ㄐ，j，基">ㄐ</span>
+		<span onclick="inputBpmf('ㄑ');" title="声母：ㄑ，q，欺">ㄑ</span>
+		<span onclick="inputBpmf('ㄒ');" title="声母：ㄒ，x，希">ㄒ</span></span>
+		<span style="background-color: #FFFF00">
+		<span onclick="inputBpmf('ㄓ');" title="声母：ㄓ，zh，知">ㄓ</span>
+		<span onclick="inputBpmf('ㄔ');" title="声母：ㄔ，ch，蚩">ㄔ</span>
+		<span onclick="inputBpmf('ㄕ');" title="声母：ㄕ，sh，诗">ㄕ</span>
+		<span onclick="inputBpmf('ㄖ');" title="声母：ㄖ，r，日">ㄖ</span></span>
+		<span style="background-color: #00FF00">
+		<span onclick="inputBpmf('ㄗ');" title="声母：ㄗ，z，资">ㄗ</span>
+		<span onclick="inputBpmf('ㄘ');" title="声母：ㄘ，c，雌">ㄘ</span>
+		<span onclick="inputBpmf('ㄙ');" title="声母：ㄙ，s，思">ㄙ</span></span>
+		<span style="background-color: #C0C0C0">
+		<span onclick="inputBpmf('ㄚ');" title="单韵母：ㄚ，a，啊">ㄚ</span>
+		<span onclick="inputBpmf('ㄛ');" title="单韵母：ㄛ，o，喔">ㄛ</span>
+		<span onclick="inputBpmf('ㄜ');" title="单韵母：ㄜ，e，鹅">ㄜ</span>
+		<span onclick="inputBpmf('ㄝ');" title="单韵母：ㄝ，ê">ㄝ</span>
+		<span onclick="inputBpmf('ㄧ');" title="单韵母：ㄧ，i，衣">ㄧ</span>
+		<span onclick="inputBpmf('ㄨ');" title="单韵母：ㄨ，u，乌">ㄨ</span>
+		<span onclick="inputBpmf('ㄩ');" title="单韵母：ㄩ，ü，迂">ㄩ</span></span>
+		<span style="background-color: #00FFFF">
+		<span onclick="inputBpmf('ㄞ');" title="复韵母：ㄞ，ai，哀">ㄞ</span>
+		<span onclick="inputBpmf('ㄟ');" title="复韵母：ㄟ，ei，欸">ㄟ</span>
+		<span onclick="inputBpmf('ㄠ');" title="复韵母：ㄠ，ao，熬">ㄠ</span>
+		<span onclick="inputBpmf('ㄡ');" title="复韵母：ㄡ，ou，欧">ㄡ</span>
+		<span onclick="inputBpmf('ㄢ');" title="复韵母：ㄢ，an，安">ㄢ</span>
+		<span onclick="inputBpmf('ㄣ');" title="复韵母：ㄣ，en，恩">ㄣ</span>
+		<span onclick="inputBpmf('ㄤ');" title="复韵母：ㄤ，ang，昂">ㄤ</span>
+		<span onclick="inputBpmf('ㄥ');" title="复韵母：ㄥ，eng，享的韵母">ㄥ</span></span>
+		<span style="background-color: #C0C0C0">
+		<span onclick="inputBpmf('ㄦ');" title="其他：ㄦ，er，儿">ㄦ</span></span>
+		<span style="background-color: #FFCC99">
+		<span onclick="inputBpmf('ˉ');" title="声调：ˉ，1，阴平">1ˉ</span>
+		<span onclick="inputBpmf('ˊ');" title="声调：ˊ，2，阳平">2ˊ</span>
+		<span onclick="inputBpmf('ˇ');" title="声调：ˇ，3，上声">3ˇ</span>
+		<span onclick="inputBpmf('ˋ');" title="声调：ˋ，4，去声">4ˋ</span>
+		<span onclick="inputBpmf('˙');" title="声调：˙，5，轻声">5˙</span></span>
+		<span style="background-color: #C0C0C0">
+		<span onclick="inputBpmf(' ');" title="空格：□，加一个空格">□</span></span></font>
+      </td>
+   </tr>
+</table>
+</div>
+
+<p></P>
+
+<div style="text-align:center;">
+<select name="selCedict" id="selCedict" onchange="selectCedictToUse();"> <!-- 16/Apr/2023. -->
+<option value="useSortedCedict" selected>选用下载后已排序的汉英词典</option>
+<option value="useUnsortedCedict">选用下载后未排序的汉英词典</option>
+<option value="useSampleCedict">选用做为示范样本的汉英词典</option>
+<option value="useTemporaryCedict">选用由用户输入的临时汉英词典</option>
+<option value="useSortedCedict">Use Loaded-Sorted Cedict</option>
+<option value="useUnsortedCedict">Use Loaded-Unsorted Cedict</option>
+<option value="useSampleCedict">Use Sample Cedict</option>
+<option value="useTemporaryCedict">Use Temporary Cedict input by user</option>
+</select>
+<label id="theSelectedCedict" style="display:none;background-color:lime;">选用下载后已排序的汉英词典</label> <!-- 22/Apr/2023: Default value. For recording the selection. This label will change but will not be displayed. -->
+</div> <!-- 16/Apr/2023. -->
+
+<textarea readonly name="cedictResult" id="cedictResult" placeholder="The search results of CEDICT (in original format) will display here. 汉英词典的查询结果将(依照原有的格式)呈现于此。" style="width:100%;height:150px;">
+</textarea>
+
+<p></p>
+
+<div id="displayA" style="KIVbackground-color:lightgrey;"></div> <!-- 31/Mar/2023: Display search results in other formats. -->
+
+<p><br /></p>
+
+<div id="aboutPg" style="display:block;visibility:visible;"> <!-- 30/Mar/2023: As very large file will involve, to hide and show file, better use visibility method for instant response. -->
+
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">关于 (About) <input type="button" value="x" name="btnX" onclick="onOffAboutPg()"></h3>
+
+<input type="button" value="试用示范样本的汉英词典" name="btnTestChn" onclick="testUsingSampleCedict('inChn')">
+<input type="button" value="Test using Sample Cedict" name="btnTestEng" onclick="testUsingSampleCedict('inEng')">
+
+<p class="txt1">(1) 这个汉英词典程序需要使用<a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank"> MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a>网站提供的CC-CEDICT资料来运作（在21.04.2023，CC-CEDICT大概拥有12万1千多个解释词条）。请从该网站下载最新版本的CC-CEDICT资料，收存进个人电脑的文件夹，将之解压缩，然后用 <input type="button" value="选文件Choose" disabled> 和 <input type="button" value="打开Open" disabled> 的按钮来打开及处理有关的资料。</p>
+
+<p class="txt1">(2) 在打开及处理完成后，有关的CC-CEDICT资料及它的已排序版本将被下载进(下列的)<span style="color:magenta;">五个文字区</span>(TextAreas)内。一个包含CC-CEDICT资料的统计表也会由程序生成。</p>
+
+<p class="txt1">(3) 请注意，为避免允许修改会造成程序运作错误，所以有关的五个TextAreas都被设定为只能读取"readonly"的模式。</p>
+
+<p class="txt1">(4) 另外，为方便用户，这个词典程序也添加了<span style="color:magenta;">两个额外文字区</span>TextAreas，一个做为存放汉英词典的样本资料（Sample，只有少许拼音a的资料）让用户试用，一个则是让用户能够即刻输入所创建的临时汉英词典资料以便马上使用。</p>
+
+<p class="txt1">(5) 这个汉英词典程序将默认使用已排序的CC-CEDICT资料进行搜索。用户可以选择其他的资料，当下被选择及使用的资料，其TextArea的背景<span style="background-color:lime;">将被设定成亮绿色</span>做为标识。</p>
+
+<p class="txt1">(6) <span style="color:orange;">在CC-CEDICT中，拼音符号ü，是以u:，而不是v，为代表</span>，例如： 女 女 [nu:3] /female/woman/daughter/， 綠 绿 [lu:4] /green/。</p>
+
+<p class="txt1">(7) 在CC-CEDICT中，有些中文词条有英文字母或数字，【用拼音找】可能找不到，必须【用简体找】或【用繁体找】才能找得到相关的解释，例如：A，AA制，B超，BM，CP值，C盘，IP，IP剧，X光，XO酱，996，88，421...。</p>
+
+<p class="txt1">(8) <span style="color:orange;">用单字词</span>搜索（例如查找：<span style="color:orange;">人，物，民，ren，wu，min</span>）通常会找到太多资料；<span style="color:orange;">用多字词</span>查找（例如查找：<span style="color:orange;">人人，人物，人民，ren ren，ren wu，ren min</span>）则会找到比较少但更精确的资料。所以如果可以做到，应该尽量用多字词查找。尤其是在选择使用【包含有..的字】这个搜索的方式时，由于它的搜索条件很宽松，只要包含有要找的字词及符合搜索格式的资料，就全部会被选取，<span style="color:orange;">因此要得到精确的结果，最好是用多字词查找</span>。</p>
+
+<p class="txt1">(9) 请留意，由于这个程序将使用根据汉英词典的格式组成的，正则表达搜索模式(Regular Expression search pattern)，来查找汉英词典的资料库，所以有时在应用单字词做查找，以及选择【包含有..的字】的搜索方式时，就可能会配对到那些在它们的英语解释部分包含有<span style="color:orange;">额外[拼音]</span>解说的汉英词典资料，(----- 例子1：待會兒 待会儿 [dai1 hui4 r5] /in a moment/later/also pr. <span style="color:orange;">[dai1 hui3 r5]</span> or <span style="color:orange;">[dai1 hui5 r5]</span>/ ------ 例子2：帆 帆 [fan1] /sail/Taiwan pr. <span style="color:orange;">[fan2]</span> except 帆布<span style="color:orange;">[fan1 bu4]</span> canvas/ ------)，这将产生意料之外的配对结果。不过本程序将会排除这类结果，而且在查找汉英词典时，使用多字词做查找也可以避免这类结果的出现。</p>
+
+<p class="txt1">(10) 本程序使用的一些英文缩略词：繁体=ft=big5=trad，简体=jt=gb=simp，拼音=py，注音=zy，大五码=big5，国标码=gb。</p>
+
+<p><br /></p>
+
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">重要事项：</h3>
+
+<div style="overflow-x:auto;">
+<table class="cedictCopyrights" style="width:95%;">
+   <tr>
+      <td>
+         <p>在此处所用的CC-CEDICT资料库(数据库)是下载自：<a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank">MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a> 网站。(网站的主页是：<a href="https://www.mdbg.net/" target="_blank">MDBG &#8599; </a>)</p>
+      </td>
+   </tr>
+   <tr>
+      <td>
+         <p>这个汉英词典程序的一些基本构思是学习及取材自：<a href="http://www.mandarintools.com/worddict.html" target="_blank">www.mandarintools.com &#8599; </a> 网站。(网站的主页是：<a href="https://www.mandarintools.com/" target="_blank">On-line Chinese Tools &#8599; </a>)</p>
+      </td>
+   </tr>
+   <tr>
+      <td>
+         <p>有关的版权 / 许可协议</p>
+		 <p>这个汉英词典程序的分发与使用是遵照：<a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License (署名-相同方式共享 4.0 国际) &#8599; </a>.</P>
+      </td>
+   </tr>
+</table>
+</div>
+
+<p><br /></p>
+
+<p class="txt1">(1) This CEDICT program needs CC-CEDICT data provided by <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank">MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a> website to run (in 21.04.2023, CC-CEDICT has about 121000 entries of dictionary records). Please download the latest copy of CC-CEDICT data from the website into local folder of PC, unzip it, and use the <input type="button" value="选文件Choose" disabled> and <input type="button" value="打开Open" disabled> buttons to open and process the data.</p>
+
+<p class="txt1">(2) After opening and processing, the CC-CEDICT data and its sorted version will be loaded into <span style="color:magenta;">The 5 TextAreas</span> (as shown below). A table containing the Statistics of CC-CEDICT data will also be generated by program.</p>
+
+<p class="txt1">(3) Please note that, to avoid program errors if editing is allowed, thus the 5 TextAreas are made "readonly".</p>
+
+<p class="txt1">(4) For the convenience of users, this dictionary program has also added <span style="color:magenta;">The 2 Extra TextAreas</span>, one is for keeping sample Cedict data (some pin yin "a" records only) for users' testing, the other one is for users to create and input temporary Cedict data for immediate usage.</p>
+
+<p class="txt1">(5) By default, this CEDICT program will use the sorted CC-CEDICT data for searching. User are allowed to select other data, the TextArea's background of existing selected and in-used data <span style="background-color:lime;">will be set to bright green colour</span> for identification.</p>
+
+<p class="txt1">(6) <span style="color:orange;">For pin yin ü, CC-CEDICT uses u:, not v, to represent it</span>, eg: 女 女 [nu:3] /female/woman/daughter/, 綠 绿 [lu:4] /green/.</p>
+
+<p class="txt1">(7) In CC-CEDICT, some Chinese records contains English alphabet or numerical numbers, for example: A, AA制, B超, BM, CP值, C盘, IP, IP剧, X光, XO酱, 996, 88, 421 ... etc. Using [Find by PY] to search may not be able to locate such records, we must use [Find by GB] or [Find by Big5] so as to find them and their respective explanations.</p>
+
+<p class="txt1">(8) <span style="color:orange;">Searching of single-character word</span> [eg, <span style="color:orange;">人, 物, 民, ren, wu, min</span>] tends to produce large amount of matched records; whereas <span style="color:orange;">searching of multi-character word</span> [eg, <span style="color:orange;">人人, 人物, 人民, ren ren, ren wu, ren min</span>> will produce less but more precise matching records. Hence, whenever it is possible, multi-character search should be used. This is especially so when searching is done with [Containing] method; the search criteria will be very wide that all data containing the search word and conforming to the search format will be selected; <span style="color:orange;">thus in order to get a precise result, it is best to use multi-character word to do the search</span>.</p>
+
+<p class="txt1">(9) Please note that, as this program will use Regular Expression search pattern based on CEDICT format to search the CEDICT database records, so sometimes when searching is done with [Containing] method and using single-character word, it may match those CEDICT records with <span style="color:orange;">extra [pin yin]</span> used in their English explanation section, (----- eg1: 待會兒 待会儿 [dai1 hui4 r5] /in a moment/later/also pr. <span style="color:orange;">[dai1 hui3 r5]</span> or <span style="color:orange;">[dai1 hui5 r5]</span>/ ------ eg2: 帆 帆 [fan1] /sail/Taiwan pr. <span style="color:orange;">[fan2]</span> except 帆布<span style="color:orange;">[fan1 bu4]</span> canvas/ ------) and will produce unexpected matched results. But this program will exclude such results, furthermore, such results can also be prevented by using multi-character word to do the search.</p>
+
+<p class="txt1">(10) Some English acronyms used in this program: 繁体=ft=big5=trad, 简体=jt=gb=simp, 拼音=py, 注音=zy, 大五码=big5, 国标码=gb.</p>
+
+<p><br /></p>
+
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">Important Notes:</h3>
+
+<div style="overflow-x:auto;">
+<table class="cedictCopyrights" style="width:95%;">
+   <tr>
+      <td>
+         <p>The CC-CEDICT database file use in this program is downloaded from: <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank">MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a> website. (Its Home page is: <a href="https://www.mdbg.net/" target="_blank">MDBG &#8599; </a>)</p>
+      </td>
+   </tr>
+   <tr>
+      <td>
+         <p>Some basic ideas use in this CEDICT program were learned and copied/adapted from: <a href="http://www.mandarintools.com/worddict.html" target="_blank">www.mandarintools.com &#8599; </a> website. (Its Home page is: <a href="https://www.mandarintools.com/" target="_blank">On-line Chinese Tools &#8599; </a>)</p>
+      </td>
+   </tr>
+   <tr>
+      <td>
+         <p>The Copyrights / License:</p>
+		 <p>This CEDICT program is licensed under a <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License &#8599; </a>.</P>
+      </td>
+   </tr>
+</table>
+</div>
+
+<p><br /></p>
+
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">五个文字区 (The 5 TextAreas):</h3>
+
+<p style="color:red;" id="showLoadedFileName"></p>
+
+<p style="color:red;" id="showLoadedFileStatus"></p>
+
+<label id="labelFileInUse" style="display:none;color:lime;">The following CEDICT-formatted file is in use:</label> <!-- 03/Apr/2023: This label will be displayed only when valid file is loaded. -->
+<p id="cedictFileInUse" style="color:lime;"></p> <!-- 03/Apr/2023: If valid file loaded, the file name will be displayed and recorded (thus can be used later) here, else, it will remain empty. -->
+
+<p>
+<span style="color:magenta;">TextArea 1:</span> The selected CEDICT file will open here (i.e. this is the Original, non-sorted CEDICT file selected by user.) <span style="color:magenta;">第一文字区：</span>所选原装未排序的汉英词典文件将在此打开
+<br><textarea readonly id="showOrgCedictAll" style="width:95%;height:150px;" placeholder="Note-1: The selected CEDICT file will open here. 所选的汉英词典文件将在此打开。"></textarea>
+</p>
+
+<p>
+<span style="color:magenta;">TextArea 2:</span> The [NB portion] of the selected CEDICT file will open here <span style="color:magenta;">第二文字区：</span>汉英词典文件的[NB注解部分]将在此打开
+<br><textarea readonly id="showOrgCedictNB" style="width:95%;height:150px;" placeholder="Note-2: The [NB portion] of the selected CEDICT file will open here. 汉英词典文件的[NB注解部分]将在此打开。"></textarea>
+<br><br><span style="color:magenta;">TextArea 3:</span> The [non-NB portion] of the selected CEDICT file will open here <span style="color:magenta;">第三文字区：</span>汉英词典文件的[非NB注解部分]将在此打开
+<br><textarea readonly id="showOrgCedictNonNB" style="width:95%;height:150px;" placeholder="Note-3: The [non-NB portion] of the selected CEDICT file will open here. 汉英词典文件的[非NB注解部分]将在此打开。"></textarea>
+<br><br><span style="color:magenta;">TextArea 4:</span> The <span style="color:red;">Sorted [non-NB portion]</span> of the selected CEDICT file will open here <span style="color:magenta;">第四文字区：</span><span style="color:red;">已排序</span>汉英词典文件的[非NB注解部分]将在此打开
+<br><textarea readonly id="showSortedCedictNonNB" style="width:95%;height:150px;background-color:lime;" placeholder="Note-4: The Sorted [non-NB portion] of the selected CEDICT file will open here. 已排序汉英词典文件的[非NB注解部分]将在此打开。By default, this CEDICT program will select the sorted CC-CEDICT data for searching, thus the background colour of this TextArea is set to bright green colour to show its selected status. 由于这个汉英词典程序将默认选用已排序的CC-CEDICT资料进行搜索，因此这个TextArea的背景被设定成亮绿色做为它被选定的标识。"></textarea>
+<br><br><span style="color:magenta;">TextArea 5:</span> The <span style="color:red;">Sorted [NB portion + non-NB portion]</span> of the selected CEDICT file will open here <span style="color:magenta;">第五文字区：</span><span style="color:red;">已排序</span>汉英词典文件的[NB注解部分 + 非NB注解部分]将在此打开
+<br><textarea readonly id="showSortedCedictAll" style="width:95%;height:150px;" placeholder="Note-5: The Sorted [NB portion + non-NB portion] of the selected CEDICT file will open here. 已排序汉英词典文件的[NB注解部分 + 非NB注解部分]将在此打开。"></textarea>
+</p>
+
+<p>NB1: TextAreas 1, 2 and 5 are for displaying only, they will not be used, you can empty them after view.
+<input type="button" value="Empty TextAreas 1, 2, 5" name="btnEmpty125" onclick="emptyTextArea('emptyTA125')">
+</p>
+
+<p>NB2: TextArea 3 is for displaying the original non-sorted CEDICT data, it will be used, but you can empty it if you do not need to use it.
+<input type="button" value="Empty TextArea 3" name="btnEmpty3" onclick="emptyTextArea('emptyTA3')">
+</p>
+
+<p>NB3: TextArea 4 is for displaying the sorted CEDICT data, <span style="background-color:lime;">it is the default data to be used by program</span>, although not advisable, but you can empty it if you do not need to use it.
+<input type="button" value="Empty TextArea 4" name="btnEmpty4" onclick="emptyTextArea('emptyTA4')">
+</p>
+
+<p>注1：第一、二和第五文字区只是做为展示之用，它们将不会被使用，在查看之后，你可以将它们清空。
+<input type="button" value="清空文字区一、二、五" name="btnEmpty125C" onclick="emptyTextArea('emptyTA125')">
+</p>
+
+<p>注2：第三文字区是做为展示原装未排序的汉英词典资料，它将会被使用，不过如果你不必使用它，你可以将它清空。
+<input type="button" value="清空文字区三" name="btnEmpty3C" onclick="emptyTextArea('emptyTA3')">
+</p>
+
+<p>注3：第四文字区是做为展示已排序的汉英词典资料，<span style="background-color:lime;">它是程序默认将使用的资料</span>，虽然不宜建议这么做，不过如果你不必使用它，你可以将它清空。
+<input type="button" value="清空文字区四" name="btnEmpty4C" onclick="emptyTextArea('emptyTA4')">
+</p><br />
+
+<p>After processing and sorting, the statistics of the selected CEDICT file will be shown below. 在处理与排序之后，所选汉英词典文件的统计数据将展示于下方。<input type="button" value="CEDICT Statistics 统计数据" onclick="document.getElementById('cedictStat').innerHTML = showAboutCedict();"></p>
+
+<div id="cedictStat" style="overflow-x:auto;"></div> <!-- 16/Apr/2023 -->
+
+<p><br /></p>
+<hr>
+<p><br /></p>
+
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">两个额外文字区 (The 2 Extra TextAreas):</h3>
+
+<p> <!-- 16/Apr/2023 -->
+<span style="color:red;">Sample Cedict data</span> will open here (some pin yin "a" records only) <span style="color:red;">汉英词典示范样本的资料</span>将在此打开（只有少许拼音a的资料）
+<br><textarea readonly id="showSampleCedict" style="width:95%;height:150px;" placeholder="Note-6: Sample CEDICT File will open here. 汉英词典示范文件将在此打开。">啊 啊 [a1] /interjection of surprise/Ah!/Oh!/H1ci/
+阿 阿 [A1] /abbr. for Afghanistan 阿富汗[A1 fu4 han4]/H2ci/
+阿 阿 [a1] /prefix used before monosyllabic names kinship terms etc to indicate familiarity/used in transliteration/also pr. [a4]/H2ci/
+呵 呵 [a1] /variant of 啊[a1]/H3ci/
+阿拉伯文 阿拉伯文 [A1 la1 bo2 wen2] /Arabic (language & writing)/H2ci/
+阿拉伯語 阿拉伯语 [A1 la1 bo2 yu3] /Arabic (language)/H2ci/
+阿姨 阿姨 [a1 yi2] /maternal aunt/step-mother/childcare worker/nursemaid/woman of similar age to one's parents (term of address used by child)/CL:個|个[ge4]/H2ci/
+啊 啊 [a2] /interjection expressing doubt or requiring answer/Eh?/what?/to show realization/to stress/H1ci/
+啊 啊 [a3] /interjection of surprise or doubt/Eh?/My!/what's up?/H1ci/
+啊 啊 [a4] /interjection or grunt of agreement/uhm/Ah OK/expression of recognition/Oh it's you!/H1ci/
+啊 啊 [a5] /modal particle ending sentence showing affirmation approval or consent/H1ci/
+挨 挨 [ai1] /in order/in sequence/close to/adjacent to/H2ci/
+哎 哎 [ai1] /hey!/(interjection used to attract attention or to express surprise or disapprobation)/H2ci/
+唉 唉 [ai1] /interjection or grunt of agreement or recognition (e.g. yes it's me!)/to sigh/H3ci/
+哀 哀 [Ai1] /Ai (c. 2000 BC) sixth of legendary Flame Emperors 炎帝[Yan2 di4] descended from Shennong 神農|神农[Shen2 nong2] Farmer God also known as Li 釐|厘[Li2]/H3zi/
+哀 哀 [ai1] /sorrow/grief/pity/to grieve for/to pity/to lament/to condole/H3zi/
+埃 埃 [ai1] /dust/dirt/Angstrom or Ångström unit of length equal to 10^-10 meters/phonetic ai or e/abbr. for Egypt 埃及[Ai1 ji2]/H4zi/
+哀悼 哀悼 [ai1 dao4] /to grieve over sb's death/to lament sb's death/mourning/H4ci/
+哀求 哀求 [ai1 qiu2] /to entreat/to implore/to plead/H4ci/
+哎呀 哎呀 [ai1 ya1] /interjection of wonder shock or admiration/H2ci/
+哎喲 哎哟 [ai1 yo1] /hey/ow/ouch/interjection of pain or surprise/H3ci/
+挨 挨 [ai2] /to suffer/to endure/to pull through (hard times)/to delay/to stall/to play for time/to dawdle/H2ci/
+癌 癌 [ai2] /cancer/carcinoma/also pr. [yan2]/H3ci/
+癌症 癌症 [ai2 zheng4] /cancer/B4ci/
+矮 矮 [ai3] /low/short (in length)/H1ci/
+藹 蔼 [ai3] /friendly/H4zi/
+愛 爱 [ai4] /to love/affection/to be fond of/to like/H1ci/
+唉 唉 [ai4] /alas/oh dear/H3ci/
+礙 碍 [ai4] /to hinder/to obstruct/to block/H3zi/
+艾 艾 [Ai4] /surname Ai/H4zi/
+艾 艾 [ai4] /Chinese mugwort or wormwood/to stop or cut short/phonetic "ai" or "i"/abbr. for 艾滋病[ai4 zi1 bing4] AIDS/H4zi/
+隘 隘 [ai4] /pass/defile/narrow/confined/in distress/H4zi/
+曖 暧 [ai4] /(of daylight) dim/obscure/clandestine/dubious/@7K/
+愛戴 爱戴 [ai4 dai4] /to love and respect/love and respect/H4ci/
+愛國 爱国 [ai4 guo2] /to love one's country/patriotic/B4ci/
+愛好 爱好 [ai4 hao4] /to like/to take pleasure in/keen on/fond of/interest/hobby/appetite for/CL:個|个[ge4]/H2ci/
+愛護 爱护 [ai4 hu4] /to cherish/to treasure/to take care of/to love and protect/H2ci/
+愛面子 爱面子 [ai4 mian4 zi5] /to save face/to worry about losing face/proud of one's reputation/sensitive about losing prestige/sense of propriety/H4ci/
+愛情 爱情 [ai4 qing2] /romance/love (romantic)/CL:個|个[ge4]份[fen4]/H2ci/
+愛人 爱人 [ai4 ren5] /spouse/husband/wife/sweetheart/CL:個|个[ge4]/H1ci/
+礙事 碍事 [ai4 shi4] /(usu used in the negative) to be of importance or to matter/to be in the way/to be a hindrance/H4ci/
+愛惜 爱惜 [ai4 xi1] /to cherish/to treasure/to use sparingly/H4ci/
+愛心 爱心 [ai4 xin1] /compassion/CL:片[pian4]/B3ci/
+艾滋病 艾滋病 [ai4 zi1 bing4] /AIDS (loanword)/H4ci/
+愛滋病 爱滋病 [ai4 zi1 bing4] /variant of 艾滋病[ai4 zi1 bing4]/B4ci/
+安 安 [An1] /surname An/H3ci/
+安 安 [an1] /content/calm/still/quiet/safe/secure/in good health/to find a place for/to install/to fix/to fit/to bring (a charge against sb)/to pacify/security/safety/peace/ampere/H3ci/
+氨 氨 [an1] /ammonia/@1K/
+庵 庵 [an1] /hut/small temple/nunnery/@1K/
+鞍 鞍 [an1] /saddle/@1K/
+安定 安定 [An1 ding4] /Anting township in Tainan county 台南縣|台南县[Tai2 nan2 xian4] Taiwan/H3ci/
+安定 安定 [an1 ding4] /stable/quiet/settled/stabilize/maintain/stabilized/calm and orderly/H3ci/
+安頓 安顿 [an1 dun4] /to find a place for/to help settle down/to arrange for/undisturbed/peaceful/B4ci/
+安撫 安抚 [an1 fu3] /to placate/to pacify/to appease/B4ci/
+安靜 安静 [an1 jing4] /quiet/peaceful/calm/H1ci/
+安寧 安宁 [An1 ning2] /Anning district of Lanzhou city 蘭州市|兰州市[Lan2 zhou1 shi4] Gansu/H4ci/
+安寧 安宁 [an1 ning2] /peaceful/tranquil/calm/composed/free from worry/H4ci/
+安排 安排 [an1 pai2] /to arrange/to plan/to set up/arrangements/plans/H1ci/
+安全 安全 [an1 quan2] /safe/secure/safety/security/H2ci/
+安慰 安慰 [an1 wei4] /to comfort/to console/CL:個|个[ge4]/H2ci/
+安穩 安稳 [an1 wen3] /smooth and steady/H4ci/
+安詳 安详 [an1 xiang2] /serene/H4ci/
+安心 安心 [an1 xin1] /at ease/to feel relieved/to set one's mind at rest/to keep one's mind on sth/H2ci/
+安置 安置 [an1 zhi4] /to find a place for/to help settle down/to arrange for/to get into bed/placement/H4ci/
+安裝 安装 [an1 zhuang1] /to install/to erect/to fix/to mount/installation/H3ci/
+俺 俺 [an3] /I (northern dialects)/@1K/
+按 按 [an4] /to press/to push/to leave aside or shelve/to control/to restrain/to keep one's hand on/to check or refer to/according to/in the light of/(of an editor or author) to make a comment/H2ci/
+暗 暗 [an4] /dark/gloomy/hidden/secret/muddled/obscure/in the dark/H2ci/
+闇 暗 [an4] /to close (a door)/to eclipse/muddled/stupid/ignorant/variant of 暗[an4]/H2ci/
+岸 岸 [an4] /bank/shore/beach/coast/CL:個|个[ge4]/H2ci/
+案 案 [an4] /(legal) case/incident/record/file/table/H4ci/
+黯 黯 [an4] /deep black/dark/dull (color)/@7K/
+暗暗 暗暗 [an4 an4] /secretly/inwardly/H3ci/
+暗淡 暗淡 [an4 dan4] /dark/dim (light)/dull (color)/drab/(fig.) gloomy/bleak/H4ci/
+案件 案件 [an4 jian4] /law case/legal case/judicial case/CL:宗[zong1]樁|桩[zhuang1]起[qi3]/H4ci/
+按勞分配 按劳分配 [an4 lao2 fen1 pei4] /distribution according to work/H4ci/
+按摩 按摩 [an4 mo2] /massage/to massage/B4ci/
+按期 按期 [an4 qi1] /on schedule/on time/H3ci/
+案情 案情 [an4 qing2] /details of a case/case/H4ci/
+暗殺 暗杀 [an4 sha1] /to assassinate/H4ci/
+按時 按时 [an4 shi2] /on time/before deadline/on schedule/H2ci/
+暗示 暗示 [an4 shi4] /to hint/to suggest/suggestion/hint/H4ci/
+按照 按照 [an4 zhao4] /according to/in accordance with/in the light of/on the basis of/H2ci/
+暗中 暗中 [an4 zhong1] /in the dark/in secret/on the sly/surreptitiously/H4ci/
+案子 案子 [an4 zi5] /long table/counter/case/law case/legal case/judicial case/B4ci/
+骯 肮 [ang1] /dirty/filthy/B3zi/
+骯髒 肮脏 [ang1 zang1] /dirty/filthy/B3ci/
+昂 昂 [ang2] /to lift/to raise/to raise one's head/high/high spirits/soaring/expensive/H4zi/
+昂貴 昂贵 [ang2 gui4] /expensive/costly/H4ci/
+昂揚 昂扬 [ang2 yang2] /elated/high-spirited/uplifting (music)/H4ci/
+盎 盎 [ang4] /abundant/bowl/dish/pot/@7K/
+熬 熬 [ao1] /to boil/to simmer/H3ci/
+凹 凹 [ao1] /a depression/indentation/concave/hollow/H4ci/
+熬 熬 [ao2] /to cook on a slow fire/to extract by heating/to decoct/to endure/H3ci/
+嗷 嗷 [ao2] /loud clamor/the sound of wailing/@7K/
+襖 袄 [ao3] /coat/jacket/short and lined coat or robe/H4ci/
+傲 傲 [ao4] /proud/arrogant/to despise/unyielding/to defy/H2zi/
+奧 奥 [Ao4] /Austria/Austrian/abbr. for 奧地利|奥地利[Ao4 di4 li4]/Olympic/Olympics/abbr. for 奧林匹克|奥林匹克[Ao4 lin2 pi3 ke4]/H3zi/
+奧 奥 [ao4] /obscure/mysterious/H3zi/
+澳 澳 [ao4] /deep bay/cove/harbor/abbr. for Macao 澳門|澳门/abbr. for Australia 澳大利亞|澳大利亚/H4zi/
+懊 懊 [ao4] /to regret/B4zi/
+拗 拗 [ao4] /to bend in two so as to break/to defy/to disobey/also pr. [ao3]/@1K/
+奧祕 奥秘 [ao4 mi4] /secret/mystery/H3ci/
+奧妙 奥妙 [ao4 miao4] /subtle/B4ci/
+懊惱 懊恼 [ao4 nao3] /annoyed/vexed/upset/B4ci/</textarea>
+</p>
+
+<p> <!-- 16/Apr/2023 -->
+<span style="color:red;">Temporary Cedict data created by user</span> will input here <span style="color:red;">用户创建的临时汉英词典资料</span>将在此输入
+<br><textarea id="showTemporaryCedict" style="width:95%;height:150px;" placeholder="Note-7: Users can create and input temporary Cedict data here for immediate usage, (they have to save the data if they want to re-use them later). 用户们可以在此输入所创建的临时汉英词典资料以供即刻使用（若想以后再用，他们必须自行把这些资料存档）。"></textarea>
+<label id="remindUser" style="display:none;">Please be reminded for data entered in the above textarea: <span style=color:red;"">
+Changes you made may not be saved.</span>To re-use, do remember to save a copy before exit the program.
+<br />注：<span style=color:red;"">以上文字区输入的资料将不会被收存。</span>若想以后再用，请记得在离开或结束本程序前，把资料存档。
+<br />Depend on devices used (PC or Mobile Phone), this page may or may not prompt a message to remind you to save your data. <span style="color:magenta">To test (use dummy data), you can Reload or click a link to leave this page.</span>
+<br />基于使用的器材（个人电脑或手机），本网页可能会或不会弹出提醒你为资料存档的讯息。<span style="color:magenta">要测试一下（用虚构资料），你可以重新下载(Reload)或点击一个链接离开本网页。</span>
+</label> <!-- 27/Apr/2023: The remindUser label will be displayed only when temporary Cedict data are created by user. -->
+</p>
+
+</body>
+</html>
