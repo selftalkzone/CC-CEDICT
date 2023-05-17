@@ -5,13 +5,22 @@ This html file program (ccCedict.html) contains javascript functions that will o
 It allows user to search the CC-CEDICT database file by Pinyin, traditional Chinese, simplified Chinese, or English.
 
 
-## How to use
+## How to use (DEMO)
 
 (1) Just download a copy of CC-CEDICT database file from [MDBG website](https://www.mdbg.net/chinese/dictionary?page=cc-cedict), unzip and store it in your PC file folder.
 
 (2) Then, go to this [DEMO website](https://www.selftalkzone.com/demoGitHub/ccCedict.html) (of ccCedict.html file), use the Choose and Open file buttons provided to process the downloaded CC-CEDICT database file and start using it.
 
-(3) Alternatively, just copy the ccCedict.html file from this depository, store it in your PC file folder, and you can start using it offline as and when needed.
+(3) Alternatively, just copy the ccCedict.html file from this repository, store it in your PC file folder, and you can start using it offline as and when needed.
+
+
+## Screenshots
+
+![Screenshot showing successful loading of cedict_ts.u8 file](screenShot-1.png)
+
+![Screenshot showing Statistics of the cedict_ts.u8 file after processing and sorting](screenShot-2.png)
+
+![Screenshot showing searching results of cedict_ts.u8 file](screenShot-3.png)
 
 
 ## Important Notes
