@@ -801,7 +801,7 @@ function testUsingSampleCedict(inLang) {
   }
   //
   if (lang == "inEng") {
-    document.getElementById("selCedict").selectedIndex = 6; selectCedictToUse();
+    document.getElementById("selCedict").selectedIndex = 2; selectCedictToUse(); // 12/Jan/2024: Change 6 to 2
 	document.getElementById("cedictResult").value = "Sample Cedict selected (with some pin yin \"a\" records), it is ready for use. Please enter a search string to proceed...\n\nFor example, use pin yin (Find by PY) to find: a / a3 / a yi / an1 ding4 / ao mi4\n\n\n\nNB: User can scroll down to bottom of this file to see the selected TextArea being changed to bright green colour.";
   }
 }
@@ -1034,7 +1034,7 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 
 <body onload='document.getElementById("inputFileG").addEventListener("change", chgFileName, false);'>
 
-<h2 style="text-align:center;font-size:20px;color:magenta;text-decoration:underline;">汉英词典 CC-CEDICT<a href="ccCedictEng.html"> (英)</a><br />Chinese English Dictionary<br /></h2>
+<h2 style="text-align:center;font-size:20px;color:magenta;text-decoration:underline;">汉英词典 CC-CEDICT<a href="ccCedict.html"> (中)</a><br />Chinese English Dictionary<br /></h2>
 
 <div style="overflow-x:auto;"> <!-- Must and added this <div> container for table below. -->
 <table class="cedictMenu"> <!-- 22/Mar/2023 -->
@@ -1047,17 +1047,17 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
    <tr>
       <td>
          <select name="selSearchType" id="selSearchType" onChange="setSearchType()">
-            <option value="byPy" selected>用拼音找</option>
-            <option value="byFt">用繁体找</option>
-            <option value="byJt">用简体找</option>
-            <option value="byEng">用英文找</option>
-            <option value="byZy">用注音找</option>
-            <option value="byPyMix">用混合拼音找</option>
+            <option value="byPy" selected>Find by PY</option>
+            <option value="byFt">Find by Big5</option>
+            <option value="byJt">Find by GB</option>
+            <option value="byEng">Find by Eng</option>
+            <option value="byZy">Find by ZY</option>
+            <option value="byPyMix">Find by PY-mix</option>
          </select><select name="selMatchType" id="selMatchType" onChange="setMatchType()">
-            <option value="beginWith" selected>开始为..的字</option>
-            <option value="matchWith">只配对..的字</option>
-            <option value="containWith">包含有..的字</option>
-            <option value="endWith">结尾为..的字</option>
+            <option value="beginWith" selected>Begin With</option>
+            <option value="matchWith">Match With</option>
+            <option value="containWith">Containing</option>
+            <option value="endWith">End With</option>
          </select><input type="text" name="txtIpArea" id="txtIpArea" size="10" onkeydown="enter2submit(event)"><input type="button" value="找Go" name="btSubmit" onClick="getSearchTxt()"><input type="button" onClick="document.getElementById('txtIpArea').value='';document.getElementById('txtIpArea').focus()" value="X" name="btClear"><a href="#aboutPg"><input type="button" value="关于About" name="btnAbout" onclick="onOffAboutPg()"></a>
       </td>
    </tr>
@@ -1181,10 +1181,10 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 
 <div style="text-align:center;">
 <select name="selCedict" id="selCedict" onchange="selectCedictToUse();"> <!-- 16/Apr/2023. -->
-<option value="useSortedCedict" selected>选用下载后已排序的汉英词典</option>
-<option value="useUnsortedCedict">选用下载后未排序的汉英词典</option>
-<option value="useSampleCedict">选用做为示范样本的汉英词典</option>
-<option value="useTemporaryCedict">选用由用户输入的临时汉英词典</option>
+<option value="useSortedCedict" selected>Use Loaded-Sorted Cedict</option>
+<option value="useUnsortedCedict">Use Loaded-Unsorted Cedict</option>
+<option value="useSampleCedict">Use Sample Cedict</option>
+<option value="useTemporaryCedict">Use Temporary Cedict input by user</option>
 </select>
 <label id="theSelectedCedict" style="display:none;background-color:lime;">选用下载后已排序的汉英词典</label> <!-- 22/Apr/2023: Default value. For recording the selection. This label will change but will not be displayed. -->
 </div> <!-- 16/Apr/2023. -->
@@ -1202,60 +1202,60 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 
 <h3 style="font-size:18px;color:magenta;text-decoration:underline;">关于 (About) <input type="button" value="x" name="btnX" onclick="onOffAboutPg()"></h3>
 
-<input type="button" value="试用示范样本的汉英词典" name="btnTestChn" onclick="testUsingSampleCedict('inChn')">
+<input type="button" value="Test using Sample Cedict" name="btnTestEng" onclick="testUsingSampleCedict('inEng')">
 
-<p class="txt1">(1.1) 这个汉英词典程序需要使用<a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank"> MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a>网站提供的CC-CEDICT资料来运作（在21.04.2023，CC-CEDICT大概拥有12万1千多个解释词条）。请从该网站下载最新版本的CC-CEDICT资料，收存进个人电脑的文件夹，将之解压缩，然后用 <input type="button" value="选文件Choose" disabled> 和 <input type="button" value="打开Open" disabled> 的按钮来打开及处理有关的资料。</p>
+<p class="txt1">(1.1) This CEDICT program needs CC-CEDICT data provided by <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank">MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a> website to run (in 21.04.2023, CC-CEDICT has about 121000 entries of dictionary records). Please download the latest copy of CC-CEDICT data from the website into local folder of PC, unzip it, and use the <input type="button" value="选文件Choose" disabled> and <input type="button" value="打开Open" disabled> buttons to open and process the data.</p>
 
-<p class="txt1">(1.2) <span style="color:orange;">这个汉英词典程序也可以打开和使用</span>任何根据CC-CEDICT的格式收存的词典资料文件。</p>
+<p class="txt1">(1.2) <span style="color:orange;">This CEDICT program can also open and use</span> any dictionary file that is formated according to CC-CEDICT data format.</p>
 
-<p class="txt1">(2) 在打开及处理完成后，有关的CC-CEDICT资料及它的已排序版本将被下载进(下列的)<span style="color:magenta;">五个文字区</span>(TextAreas)内。一个包含CC-CEDICT资料的统计表也会由程序生成。</p>
+<p class="txt1">(2) After opening and processing, the CC-CEDICT data and its sorted version will be loaded into <span style="color:magenta;">The 5 TextAreas</span> (as shown below). A table containing the Statistics of CC-CEDICT data will also be generated by program.</p>
 
-<p class="txt1">(3) 请注意，为避免允许修改会造成程序运作错误，所以有关的五个TextAreas都被设定为只能读取"readonly"的模式。</p>
+<p class="txt1">(3) Please note that, to avoid program errors if editing is allowed, thus the 5 TextAreas are made "readonly".</p>
 
-<p class="txt1">(4) 另外，为方便用户，这个词典程序也添加了<span style="color:magenta;">两个额外文字区</span>TextAreas，一个做为存放汉英词典的样本资料（Sample，只有少许拼音a的资料）让用户试用，一个则是让用户能够即刻输入所创建的临时汉英词典资料以便马上使用。</p>
+<p class="txt1">(4) For the convenience of users, this dictionary program has also added <span style="color:magenta;">The 2 Extra TextAreas</span>, one is for keeping sample Cedict data (some pin yin "a" records only) for users' testing, the other one is for users to create and input temporary Cedict data for immediate usage.</p>
 
-<p class="txt1">(5) 这个汉英词典程序将默认使用已排序的CC-CEDICT资料进行搜索。用户可以选择其他的资料，当下被选择及使用的资料，其TextArea的背景<span style="background-color:lime;">将被设定成亮绿色</span>做为标识。</p>
+<p class="txt1">(5) By default, this CEDICT program will use the sorted CC-CEDICT data for searching. User are allowed to select other data, the TextArea's background of existing selected and in-used data <span style="background-color:lime;">will be set to bright green colour</span> for identification.</p>
 
-<p class="txt1">(6) <span style="color:orange;">在CC-CEDICT中，拼音符号ü，是以u:，而不是v，为代表</span>，例如： 女 女 [nu:3] /female/woman/daughter/， 綠 绿 [lu:4] /green/。</p>
+<p class="txt1">(6) <span style="color:orange;">For pin yin ü, CC-CEDICT uses u:, not v, to represent it</span>, eg: 女 女 [nu:3] /female/woman/daughter/, 綠 绿 [lu:4] /green/.</p>
 
-<p class="txt1">(7) 在CC-CEDICT中，有些中文词条有英文字母或数字，【用拼音找】可能找不到，必须【用简体找】或【用繁体找】才能找得到相关的解释，例如：A，AA制，B超，BM，CP值，C盘，IP，IP剧，X光，XO酱，996，88，421...。</p>
+<p class="txt1">(7) In CC-CEDICT, some Chinese records contains English alphabet or numerical numbers, for example: A, AA制, B超, BM, CP值, C盘, IP, IP剧, X光, XO酱, 996, 88, 421 ... etc. Using [Find by PY] to search may not be able to locate such records, we must use [Find by GB] or [Find by Big5] so as to find them and their respective explanations.</p>
 
-<p class="txt1">(8) <span style="color:orange;">用单字词</span>搜索（例如查找：<span style="color:orange;">人，物，民，ren，wu，min</span>）通常会找到太多资料；<span style="color:orange;">用多字词</span>查找（例如查找：<span style="color:orange;">人人，人物，人民，ren ren，ren wu，ren min</span>）则会找到比较少但更精确的资料。所以如果可以做到，应该尽量用多字词查找。尤其是在选择使用【包含有..的字】这个搜索的方式时，由于它的搜索条件很宽松，只要包含有要找的字词及符合搜索格式的资料，就全部会被选取，<span style="color:orange;">因此要得到精确的结果，最好是用多字词查找</span>。</p>
+<p class="txt1">(8) <span style="color:orange;">Searching of single-character word</span> [eg, <span style="color:orange;">人, 物, 民, ren, wu, min</span>] tends to produce large amount of matched records; whereas <span style="color:orange;">searching of multi-character word</span> [eg, <span style="color:orange;">人人, 人物, 人民, ren ren, ren wu, ren min</span>> will produce less but more precise matching records. Hence, whenever it is possible, multi-character search should be used. This is especially so when searching is done with [Containing] method; the search criteria will be very wide that all data containing the search word and conforming to the search format will be selected; <span style="color:orange;">thus in order to get a precise result, it is best to use multi-character word to do the search</span>.</p>
 
-<p class="txt1">(9) 请留意，由于这个程序将使用根据汉英词典的格式组成的，正则表达搜索模式(Regular Expression search pattern)，来查找汉英词典的资料库，所以有时在应用单字词做查找，以及选择【包含有..的字】的搜索方式时，就可能会配对到那些在它们的英语解释部分包含有<span style="color:orange;">额外[拼音]</span>解说的汉英词典资料，(----- 例子1：待會兒 待会儿 [dai1 hui4 r5] /in a moment/later/also pr. <span style="color:orange;">[dai1 hui3 r5]</span> or <span style="color:orange;">[dai1 hui5 r5]</span>/ ------ 例子2：帆 帆 [fan1] /sail/Taiwan pr. <span style="color:orange;">[fan2]</span> except 帆布<span style="color:orange;">[fan1 bu4]</span> canvas/ ------)，这将产生意料之外的配对结果。不过本程序将会排除这类结果，而且在查找汉英词典时，使用多字词做查找也可以避免这类结果的出现。</p>
+<p class="txt1">(9) Please note that, as this program will use Regular Expression search pattern based on CEDICT format to search the CEDICT database records, so sometimes when searching is done with [Containing] method and using single-character word, it may match those CEDICT records with <span style="color:orange;">extra [pin yin]</span> used in their English explanation section, (----- eg1: 待會兒 待会儿 [dai1 hui4 r5] /in a moment/later/also pr. <span style="color:orange;">[dai1 hui3 r5]</span> or <span style="color:orange;">[dai1 hui5 r5]</span>/ ------ eg2: 帆 帆 [fan1] /sail/Taiwan pr. <span style="color:orange;">[fan2]</span> except 帆布<span style="color:orange;">[fan1 bu4]</span> canvas/ ------) and will produce unexpected matched results. But this program will exclude such results, furthermore, such results can also be prevented by using multi-character word to do the search.</p>
 
-<p class="txt1">(10) 本程序使用的一些英文缩略词：繁体=ft=big5=trad，简体=jt=gb=simp，拼音=py=PY，注音=zy=ZY，拼音数=拼音数字=PYN，大五码=big5，国标码=gb。</p>
+<p class="txt1">(10) Some English acronyms used in this program: 繁体=ft=big5=trad, 简体=jt=gb=simp, 拼音=py=PY, 注音=zy=ZY, 拼音数=拼音数字=PYN, 大五码=big5, 国标码=gb.</p>
 
-<p class="txt1">(11) 有关<span style="color:orange;">如何使用：拼音、注音、混合拼音</span>，查找词典的简单说明。以下将提到的“按劳分配”例子，可以从按选 <input type="button" value="试用示范样本的汉英词典" name="btnTestChn" onclick="testUsingSampleCedict('inChn')"> 中找到。</p>
+<p class="txt1">(11) Some notes on <span style="color:orange;">how to find by: pinyin(PY), zhuyin(ZY), pinyin-mix(PY-mix)</span>. The “按劳分配” example mentioned below can be found in <input type="button" value="Test using Sample Cedict" name="btnTestEng" onclick="testUsingSampleCedict('inEng')">.</p>
 
-<p class="txt1">(a) <span style="color:orange;">用拼音找</span>：可以用三种方法，例如要查找“按劳分配”，(i) 只用拼音不标声调，(an lao fen pei)，(ii) 用拼音加声调，(an4 lao2 fen1 pei4)，(iii) 用拼音加部分的声调，(an4 lao fen1 pei)。</p>
+<p class="txt1">(a) <span style="color:orange;">Find by PY</span>: Can be done by 3 methods, for example, to find “按劳分配”, (i) Use pinyin without tone marks, (an lao fen pei), (ii) Use pinyin with tone marks, (an4 lao2 fen1 pei4), (iii) Use pinyin with partial tone marks, (an4 lao fen1 pei).</p>
 
-<p class="txt1">(b) <span style="color:orange;">用注音找</span>：可以用三种方法，例如要查找“按劳分配”，(i) 只用注音不标声调，但由于通常注音不标声调代表第1声，所以<span style="color:orange;">只能用注音的轻声做代替</span>，(<span style="background-color:orange;">˙</span>ㄢ <span style="background-color:orange;">˙</span>ㄌㄠ <span style="background-color:orange;">˙</span>ㄈㄣ <span style="background-color:orange;">˙</span>ㄆㄟ)，(ii) 用注音加声调，(ㄢˋ ㄌㄠˊ ㄈㄣ ㄆㄟˋ)，(iii) 用注音加部分的声调，(ㄢˋ <span style="background-color:orange;">˙</span>ㄌㄠ ㄈㄣ <span style="background-color:orange;">˙</span>ㄆㄟ)。</p>
+<p class="txt1">(b) <span style="color:orange;">Find by ZY</span>: Can be done by 3 methods, for example, to find “按劳分配”, (i) Use zhuyin without tone marks, but, as zhuyin without tone mark is usually used to represent 1st tone of zhuyin, therefore <span style="color:orange;">it can only use light-tone mark of zhuyin as a subsitute</span>, (<span style="background-color:orange;">˙</span>ㄢ <span style="background-color:orange;">˙</span>ㄌㄠ <span style="background-color:orange;">˙</span>ㄈㄣ <span style="background-color:orange;">˙</span>ㄆㄟ), (ii) Use zhuyin with tone marks, (ㄢˋ ㄌㄠˊ ㄈㄣ ㄆㄟˋ), (iii) Use zhuyin with partial tone marks, (ㄢˋ <span style="background-color:orange;">˙</span>ㄌㄠ ㄈㄣ <span style="background-color:orange;">˙</span>ㄆㄟ).</p>
 
-<p class="txt1">(c) <span style="color:orange;">用混合拼音找</span>：可以用三种方法，例如要查找“按劳分配”，(i) 只用拼音不标声调，(an lao fen pei)，(ii) 用拼音加声调，(àn láo fen1 pei4)，(iii) 用拼音加部分的声调，(àn lao fēn pei)。</p>
+<p class="txt1">(c) <span style="color:orange;">Find by PY-mix</span>: Can be done by 3 methods, for example, to find “按劳分配”, (i) Use pinyin without tone marks, (an lao fen pei), (ii) Use pinyin with tone marks, (àn láo fen1 pei4), (iii) Use pinyin with partial tone marks, (àn lao fēn pei).</p>
 
-<p class="txt1">注：其实对于<span style="color:orange;">用注音找</span>和<span style="color:orange;">用混合拼音找</span>，这个程序都是先将使用者输入的注音(符号)，(例如ㄅㄆㄇㄈ)，和，拼音(符号)，(例如āóěìū)，转换成拼音，然后通过类似以上(11)(a)的方法<span style="color:orange;">用拼音找</span>，所以用这两个方法会较费时。</p>
+<p class="txt1">Note: Actually, for <span style="color:orange;">Find by ZY</span> and <span style="color:orange;">Find by PY-mix</span>, this program will always convert the zhuyin (fu hao symbols), (eg, ㄅㄆㄇㄈ), and, pinyin (fu hao symbols), (eg, āóěìū), to pinyin first, then it will use method similar to (11)(a) above, to <span style="color:orange;">Find by PY</span>, thus using these two methods are more time consuming.</p>
 
 <p><br /></p>
 
-<h3 style="font-size:18px;color:magenta;text-decoration:underline;">重要事项：</h3>
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">Important Notes:</h3>
 
 <div style="overflow-x:auto;">
 <table class="cedictCopyrights" style="width:95%;">
    <tr>
       <td>
-         <p>在此处所用的CC-CEDICT资料库(数据库)是下载自：<a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank">MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a> 网站。(网站的主页是：<a href="https://www.mdbg.net/" target="_blank">MDBG &#8599; </a>)</p>
+         <p>The CC-CEDICT database file use in this program is downloaded from: <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank">MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a> website. (Its Home page is: <a href="https://www.mdbg.net/" target="_blank">MDBG &#8599; </a>)</p>
       </td>
    </tr>
    <tr>
       <td>
-         <p>这个汉英词典程序的一些基本构思是学习及取材自：<a href="http://www.mandarintools.com/worddict.html" target="_blank">www.mandarintools.com &#8599; </a> 网站。(网站的主页是：<a href="https://www.mandarintools.com/" target="_blank">On-line Chinese Tools &#8599; </a>)</p>
+         <p>Some basic ideas use in this CEDICT program were learned and copied/adapted from: <a href="http://www.mandarintools.com/worddict.html" target="_blank">www.mandarintools.com &#8599; </a> website. (Its Home page is: <a href="https://www.mandarintools.com/" target="_blank">On-line Chinese Tools &#8599; </a>)</p>
       </td>
    </tr>
    <tr>
       <td>
-         <p>有关的版权 / 许可协议</p>
-		 <p>这个汉英词典程序的分发与使用是遵照：<a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License (署名-相同方式共享 4.0 国际) &#8599; </a>.</P>
+         <p>The Copyrights / License:</p>
+		 <p>This CEDICT program is licensed under a <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License &#8599; </a>.</P>
       </td>
    </tr>
 </table>
@@ -1273,34 +1273,34 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 <p id="cedictFileInUse" style="color:lime;"></p> <!-- 03/Apr/2023: If valid file loaded, the file name will be displayed and recorded (thus can be used later) here, else, it will remain empty. -->
 
 <p>
-<span style="color:magenta;">第一文字区：</span>所选原装未排序的汉英词典文件将在此打开
+<span style="color:magenta;">TextArea 1:</span> The selected CEDICT file will open here (i.e. this is the Original, non-sorted CEDICT file selected by user.)
 <br><textarea readonly id="showOrgCedictAll" style="width:95%;height:150px;" placeholder="Note-1: The selected CEDICT file will open here. 所选的汉英词典文件将在此打开。"></textarea>
 </p>
 
 <p>
-<span style="color:magenta;">第二文字区：</span>汉英词典文件的[NB注解部分]将在此打开
+<span style="color:magenta;">TextArea 2:</span> The [NB portion] of the selected CEDICT file will open here
 <br><textarea readonly id="showOrgCedictNB" style="width:95%;height:150px;" placeholder="Note-2: The [NB portion] of the selected CEDICT file will open here. 汉英词典文件的[NB注解部分]将在此打开。"></textarea>
-<br><br><span style="color:magenta;">第三文字区：</span>汉英词典文件的[非NB注解部分]将在此打开
+<br><br><span style="color:magenta;">TextArea 3:</span> The [non-NB portion] of the selected CEDICT file will open here
 <br><textarea readonly id="showOrgCedictNonNB" style="width:95%;height:150px;" placeholder="Note-3: The [non-NB portion] of the selected CEDICT file will open here. 汉英词典文件的[非NB注解部分]将在此打开。"></textarea>
-<br><br><span style="color:magenta;">第四文字区：</span><span style="color:red;">已排序</span>汉英词典文件的[非NB注解部分]将在此打开
+<br><br><span style="color:magenta;">TextArea 4:</span> The <span style="color:red;">Sorted [non-NB portion]</span> of the selected CEDICT file will open here
 <br><textarea readonly id="showSortedCedictNonNB" style="width:95%;height:150px;background-color:lime;" placeholder="Note-4: The Sorted [non-NB portion] of the selected CEDICT file will open here. 已排序汉英词典文件的[非NB注解部分]将在此打开。By default, this CEDICT program will select the sorted CC-CEDICT data for searching, thus the background colour of this TextArea is set to bright green colour to show its selected status. 由于这个汉英词典程序将默认选用已排序的CC-CEDICT资料进行搜索，因此这个TextArea的背景被设定成亮绿色做为它被选定的标识。"></textarea>
-<br><br><span style="color:magenta;">第五文字区：</span><span style="color:red;">已排序</span>汉英词典文件的[NB注解部分 + 非NB注解部分]将在此打开
+<br><br><span style="color:magenta;">TextArea 5:</span> The <span style="color:red;">Sorted [NB portion + non-NB portion]</span> of the selected CEDICT file will open here
 <br><textarea readonly id="showSortedCedictAll" style="width:95%;height:150px;" placeholder="Note-5: The Sorted [NB portion + non-NB portion] of the selected CEDICT file will open here. 已排序汉英词典文件的[NB注解部分 + 非NB注解部分]将在此打开。"></textarea>
 </p>
 
-<p>注1：第一、二和第五文字区只是做为展示之用，它们将不会被使用，在查看之后，你可以将它们清空。
-<input type="button" value="清空文字区一、二、五" name="btnEmpty125C" onclick="emptyTextArea('emptyTA125')">
+<p>NB1: TextAreas 1, 2 and 5 are for displaying only, they will not be used, you can empty them after view.
+<input type="button" value="Empty TextAreas 1, 2, 5" name="btnEmpty125" onclick="emptyTextArea('emptyTA125')">
 </p>
 
-<p>注2：第三文字区是做为展示原装未排序的汉英词典资料，它将会被使用，不过如果你不必使用它，你可以将它清空。
-<input type="button" value="清空文字区三" name="btnEmpty3C" onclick="emptyTextArea('emptyTA3')">
+<p>NB2: TextArea 3 is for displaying the original non-sorted CEDICT data, it will be used, but you can empty it if you do not need to use it.
+<input type="button" value="Empty TextArea 3" name="btnEmpty3" onclick="emptyTextArea('emptyTA3')">
 </p>
 
-<p>注3：第四文字区是做为展示已排序的汉英词典资料，<span style="background-color:lime;">它是程序默认将使用的资料</span>，虽然不宜建议这么做，不过如果你不必使用它，你可以将它清空。
-<input type="button" value="清空文字区四" name="btnEmpty4C" onclick="emptyTextArea('emptyTA4')">
+<p>NB3: TextArea 4 is for displaying the sorted CEDICT data, <span style="background-color:lime;">it is the default data to be used by program</span>, although not advisable, but you can empty it if you do not need to use it.
+<input type="button" value="Empty TextArea 4" name="btnEmpty4" onclick="emptyTextArea('emptyTA4')">
 </p><br />
 
-<p>在处理与排序之后，所选汉英词典文件的统计数据将展示于下方。<input type="button" value="CEDICT Statistics 统计数据" onclick="document.getElementById('cedictStat').innerHTML = showAboutCedict();"></p>
+<p>After processing and sorting, the statistics of the selected CEDICT file will be shown below.<input type="button" value="CEDICT Statistics 统计数据" onclick="document.getElementById('cedictStat').innerHTML = showAboutCedict();"></p>
 
 <div id="cedictStat" style="overflow-x:auto;"></div> <!-- 16/Apr/2023 -->
 
@@ -1311,7 +1311,7 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 <h3 style="font-size:18px;color:magenta;text-decoration:underline;">两个额外文字区 (The 2 Extra TextAreas):</h3>
 
 <p> <!-- 16/Apr/2023 -->
-<span style="color:red;">汉英词典示范样本的资料</span>将在此打开（只有少许拼音a的资料）
+<span style="color:red;">Sample Cedict data</span> will open here (some pin yin "a" records only)
 <br><textarea readonly id="showSampleCedict" style="width:95%;height:150px;" placeholder="Note-6: Sample CEDICT File will open here. 汉英词典示范文件将在此打开。">啊 啊 [a1] /interjection of surprise/Ah!/Oh!/H1ci/
 阿 阿 [A1] /abbr. for Afghanistan 阿富汗[A1 fu4 han4]/H2ci/
 阿 阿 [a1] /prefix used before monosyllabic names kinship terms etc to indicate familiarity/used in transliteration/also pr. [a4]/H2ci/
@@ -1420,7 +1420,7 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 </p>
 
 <p> <!-- 16/Apr/2023 -->
-<span style="color:red;">用户创建的临时汉英词典资料</span>将在此输入
+<span style="color:red;">Temporary Cedict data created by user</span> will input here
 <br><textarea id="showTemporaryCedict" style="width:95%;height:150px;" placeholder="Note-7: Users can create and input temporary Cedict data here for immediate usage, (they have to save the data if they want to re-use them later). 用户们可以在此输入所创建的临时汉英词典资料以供即刻使用（若想以后再用，他们必须自行把这些资料存档）。"></textarea>
 <label id="remindUser" style="display:none;">Please be reminded for data entered in the above textarea: <span style=color:red;"">
 Changes you made may not be saved.</span>To re-use, do remember to save a copy before exit the program.
