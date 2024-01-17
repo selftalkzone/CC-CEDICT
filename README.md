@@ -9,7 +9,7 @@ It allows user to search the CC-CEDICT database file by Pinyin, traditional Chin
 
 (1) Just download a copy of CC-CEDICT database file from [MDBG website](https://www.mdbg.net/chinese/dictionary?page=cc-cedict), unzip and store it in your PC file folder.
 
-(2) Then, go to this [DEMO website](https://www.selftalkzone.com/demoGitHub/ccCedict.html) (of ccCedict.html file), use the Choose and Open file buttons provided to process the downloaded CC-CEDICT database file and start using it.
+(2) Then, go to this [DEMO website](https://www.selftalkzone.com/demoGitHub/cedict/ccCedict.html) (of ccCedict.html file), use the Choose and Open file buttons provided to process the downloaded CC-CEDICT database file and start using it.
 
 (3) Alternatively, just copy the ccCedict.html file from this repository, store it in your PC file folder, and you can start using it offline as and when needed.
 
