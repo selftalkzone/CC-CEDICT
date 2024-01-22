@@ -1238,32 +1238,7 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 
 <p><br /></p>
 
-<h3 style="font-size:18px;color:magenta;text-decoration:underline;">重要事项：</h3>
-
-<div style="overflow-x:auto;">
-<table class="cedictCopyrights" style="width:95%;">
-   <tr>
-      <td>
-         <p>在此处所用的CC-CEDICT资料库(数据库)是下载自：<a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank">MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a> 网站。(网站的主页是：<a href="https://www.mdbg.net/" target="_blank">MDBG &#8599; </a>)</p>
-      </td>
-   </tr>
-   <tr>
-      <td>
-         <p>这个汉英词典程序的一些基本构思是学习及取材自：<a href="http://www.mandarintools.com/worddict.html" target="_blank">www.mandarintools.com &#8599; </a> 网站。(网站的主页是：<a href="https://www.mandarintools.com/" target="_blank">On-line Chinese Tools &#8599; </a>)</p>
-      </td>
-   </tr>
-   <tr>
-      <td>
-         <p>有关的版权 / 许可协议</p>
-		 <p>这个汉英词典程序的分发与使用是遵照：<a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License (署名-相同方式共享 4.0 国际) &#8599; </a>.</P>
-      </td>
-   </tr>
-</table>
-</div>
-
-<p><br /></p>
-
-<h3 style="font-size:18px;color:magenta;text-decoration:underline;">五个文字区 (The 5 TextAreas):</h3>
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">五个文字区 (The 5 TextAreas)</h3>
 
 <p style="color:red;" id="showLoadedFileName"></p>
 
@@ -1272,12 +1247,12 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 <label id="labelFileInUse" style="display:none;color:lime;">The following CEDICT-formatted file is in use:</label> <!-- 03/Apr/2023: This label will be displayed only when valid file is loaded. -->
 <p id="cedictFileInUse" style="color:lime;"></p> <!-- 03/Apr/2023: If valid file loaded, the file name will be displayed and recorded (thus can be used later) here, else, it will remain empty. -->
 
-<p>
+<p class="txt1">
 <span style="color:magenta;">第一文字区：</span>所选原装未排序的汉英词典文件将在此打开
 <br><textarea readonly id="showOrgCedictAll" style="width:95%;height:150px;" placeholder="Note-1: The selected CEDICT file will open here. 所选的汉英词典文件将在此打开。"></textarea>
 </p>
 
-<p>
+<p class="txt1">
 <span style="color:magenta;">第二文字区：</span>汉英词典文件的[NB注解部分]将在此打开
 <br><textarea readonly id="showOrgCedictNB" style="width:95%;height:150px;" placeholder="Note-2: The [NB portion] of the selected CEDICT file will open here. 汉英词典文件的[NB注解部分]将在此打开。"></textarea>
 <br><br><span style="color:magenta;">第三文字区：</span>汉英词典文件的[非NB注解部分]将在此打开
@@ -1288,19 +1263,21 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 <br><textarea readonly id="showSortedCedictAll" style="width:95%;height:150px;" placeholder="Note-5: The Sorted [NB portion + non-NB portion] of the selected CEDICT file will open here. 已排序汉英词典文件的[NB注解部分 + 非NB注解部分]将在此打开。"></textarea>
 </p>
 
-<p>注1：第一、二和第五文字区只是做为展示之用，它们将不会被使用，在查看之后，你可以将它们清空。
+<p style="color:red;">由于下载大的词典文件可能会使你的电脑运行变慢，你可以将下述一些不必使用的文字区清空以便缓解情况。</p>
+
+<p class="txt1">注1：第一、二和第五文字区只是做为展示之用，它们将不会被使用，在查看之后，你可以将它们清空。
 <input type="button" value="清空文字区一、二、五" name="btnEmpty125C" onclick="emptyTextArea('emptyTA125')">
 </p>
 
-<p>注2：第三文字区是做为展示原装未排序的汉英词典资料，它将会被使用，不过如果你不必使用它，你可以将它清空。
+<p class="txt1">注2：第三文字区是做为展示原装未排序的汉英词典资料，它将会被使用，不过如果你不必使用它，你可以将它清空。
 <input type="button" value="清空文字区三" name="btnEmpty3C" onclick="emptyTextArea('emptyTA3')">
 </p>
 
-<p>注3：第四文字区是做为展示已排序的汉英词典资料，<span style="background-color:lime;">它是程序默认将使用的资料</span>，虽然不宜建议这么做，不过如果你不必使用它，你可以将它清空。
+<p class="txt1">注3：第四文字区是做为展示已排序的汉英词典资料，<span style="background-color:lime;">它是程序默认将使用的资料</span>，虽然不宜建议这么做，不过如果你不必使用它，你可以将它清空。
 <input type="button" value="清空文字区四" name="btnEmpty4C" onclick="emptyTextArea('emptyTA4')">
 </p><br />
 
-<p>在处理与排序之后，所选汉英词典文件的统计数据将展示于下方。<input type="button" value="CEDICT Statistics 统计数据" onclick="document.getElementById('cedictStat').innerHTML = showAboutCedict();"></p>
+<p class="txt1">在处理与排序之后，所选汉英词典文件的统计数据将展示于下方。<input type="button" value="CEDICT Statistics 统计数据" onclick="document.getElementById('cedictStat').innerHTML = showAboutCedict();"></p>
 
 <div id="cedictStat" style="overflow-x:auto;"></div> <!-- 16/Apr/2023 -->
 
@@ -1308,9 +1285,9 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 <hr>
 <p><br /></p>
 
-<h3 style="font-size:18px;color:magenta;text-decoration:underline;">两个额外文字区 (The 2 Extra TextAreas):</h3>
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">两个额外文字区 (The 2 Extra TextAreas)</h3>
 
-<p> <!-- 16/Apr/2023 -->
+<p class="txt1"> <!-- 16/Apr/2023 -->
 <span style="color:red;">汉英词典示范样本的资料</span>将在此打开（只有少许拼音a的资料）
 <br><textarea readonly id="showSampleCedict" style="width:95%;height:150px;" placeholder="Note-6: Sample CEDICT File will open here. 汉英词典示范文件将在此打开。">啊 啊 [a1] /interjection of surprise/Ah!/Oh!/H1ci/
 阿 阿 [A1] /abbr. for Afghanistan 阿富汗[A1 fu4 han4]/H2ci/
@@ -1419,7 +1396,7 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 懊惱 懊恼 [ao4 nao3] /annoyed/vexed/upset/B4ci/</textarea>
 </p>
 
-<p> <!-- 16/Apr/2023 -->
+<p class="txt1"> <!-- 16/Apr/2023 -->
 <span style="color:red;">用户创建的临时汉英词典资料</span>将在此输入
 <br><textarea id="showTemporaryCedict" style="width:95%;height:150px;" placeholder="Note-7: Users can create and input temporary Cedict data here for immediate usage, (they have to save the data if they want to re-use them later). 用户们可以在此输入所创建的临时汉英词典资料以供即刻使用（若想以后再用，他们必须自行把这些资料存档）。"></textarea>
 <label id="remindUser" style="display:none;">Please be reminded for data entered in the above textarea: <span style=color:red;"">
@@ -1429,6 +1406,38 @@ Changes you made may not be saved.</span>To re-use, do remember to save a copy b
 <br />基于使用的器材（个人电脑或手机），本网页可能会或不会弹出提醒你为资料存档的讯息。<span style="color:magenta">要测试一下（用虚构资料），你可以重新下载(Reload)或点击一个链接离开本网页。</span>
 </label> <!-- 27/Apr/2023: The remindUser label will be displayed only when temporary Cedict data are created by user. -->
 </p>
+
+<p><br /></p>
+
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">重要事项 (Important Notes)</h3>
+
+<div style="overflow-x:auto;">
+<table class="cedictCopyrights" style="width:95%;">
+   <tr>
+      <td>
+         <p class="txt1">在此处所用的CC-CEDICT资料库(数据库)是下载自：<a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank">MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a> 网站。(网站的主页是：<a href="https://www.mdbg.net/" target="_blank">MDBG &#8599; </a>)</p>
+      </td>
+   </tr>
+   <tr>
+      <td>
+         <p class="txt1">这个汉英词典程序的一些基本构思是学习及取材自：<a href="http://www.mandarintools.com/worddict.html" target="_blank">www.mandarintools.com &#8599; </a> 网站。(网站的主页是：<a href="https://www.mandarintools.com/" target="_blank">On-line Chinese Tools &#8599; </a>)</p>
+      </td>
+   </tr>
+   <tr>
+      <td>
+         <p class="txt1">有关的版权 / 许可协议</p>
+		 <p class="txt1">这个汉英词典程序的分发与使用是遵照：<a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License (署名-相同方式共享 4.0 国际) &#8599; </a>.</P>
+      </td>
+   </tr>
+</table>
+</div>
+
+<p><br /></p>
+
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">免责声明 (Disclaimer)</h3>
+<p class="txt1">自语区Self Talk Zone公开声明不保证这个《汉英词典 CC-CEDICT》程序的准确、可靠、免于出错，以及不保证经由使用这个程序所取得的任何下载的，程序处理提供的或其他方式获得的资料、讯息、结果的准确、可靠和免于出错。因此任何人若决定要使用这个程序，他们必须自行考量且自负风险。</p>
+
+</div>
 
 </body>
 </html>

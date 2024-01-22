@@ -1238,32 +1238,7 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 
 <p><br /></p>
 
-<h3 style="font-size:18px;color:magenta;text-decoration:underline;">Important Notes:</h3>
-
-<div style="overflow-x:auto;">
-<table class="cedictCopyrights" style="width:95%;">
-   <tr>
-      <td>
-         <p>The CC-CEDICT database file use in this program is downloaded from: <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank">MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a> website. (Its Home page is: <a href="https://www.mdbg.net/" target="_blank">MDBG &#8599; </a>)</p>
-      </td>
-   </tr>
-   <tr>
-      <td>
-         <p>Some basic ideas use in this CEDICT program were learned and copied/adapted from: <a href="http://www.mandarintools.com/worddict.html" target="_blank">www.mandarintools.com &#8599; </a> website. (Its Home page is: <a href="https://www.mandarintools.com/" target="_blank">On-line Chinese Tools &#8599; </a>)</p>
-      </td>
-   </tr>
-   <tr>
-      <td>
-         <p>The Copyrights / License:</p>
-		 <p>This CEDICT program is licensed under a <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License &#8599; </a>.</P>
-      </td>
-   </tr>
-</table>
-</div>
-
-<p><br /></p>
-
-<h3 style="font-size:18px;color:magenta;text-decoration:underline;">五个文字区 (The 5 TextAreas):</h3>
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">五个文字区 (The 5 TextAreas)</h3>
 
 <p style="color:red;" id="showLoadedFileName"></p>
 
@@ -1272,12 +1247,12 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 <label id="labelFileInUse" style="display:none;color:lime;">The following CEDICT-formatted file is in use:</label> <!-- 03/Apr/2023: This label will be displayed only when valid file is loaded. -->
 <p id="cedictFileInUse" style="color:lime;"></p> <!-- 03/Apr/2023: If valid file loaded, the file name will be displayed and recorded (thus can be used later) here, else, it will remain empty. -->
 
-<p>
+<p class="txt1">
 <span style="color:magenta;">TextArea 1:</span> The selected CEDICT file will open here (i.e. this is the Original, non-sorted CEDICT file selected by user.)
 <br><textarea readonly id="showOrgCedictAll" style="width:95%;height:150px;" placeholder="Note-1: The selected CEDICT file will open here. 所选的汉英词典文件将在此打开。"></textarea>
 </p>
 
-<p>
+<p class="txt1">
 <span style="color:magenta;">TextArea 2:</span> The [NB portion] of the selected CEDICT file will open here
 <br><textarea readonly id="showOrgCedictNB" style="width:95%;height:150px;" placeholder="Note-2: The [NB portion] of the selected CEDICT file will open here. 汉英词典文件的[NB注解部分]将在此打开。"></textarea>
 <br><br><span style="color:magenta;">TextArea 3:</span> The [non-NB portion] of the selected CEDICT file will open here
@@ -1288,19 +1263,21 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 <br><textarea readonly id="showSortedCedictAll" style="width:95%;height:150px;" placeholder="Note-5: The Sorted [NB portion + non-NB portion] of the selected CEDICT file will open here. 已排序汉英词典文件的[NB注解部分 + 非NB注解部分]将在此打开。"></textarea>
 </p>
 
-<p>NB1: TextAreas 1, 2 and 5 are for displaying only, they will not be used, you can empty them after view.
+<p style="color:red;">For large loaded dictionary file, it may slow down your PC, you can empty some of the following un-used TextAreas to alleviate the problem.</p>
+
+<p class="txt1">NB1: TextAreas 1, 2 and 5 are for displaying only, they will not be used, you can empty them after view.
 <input type="button" value="Empty TextAreas 1, 2, 5" name="btnEmpty125" onclick="emptyTextArea('emptyTA125')">
 </p>
 
-<p>NB2: TextArea 3 is for displaying the original non-sorted CEDICT data, it will be used, but you can empty it if you do not need to use it.
+<p class="txt1">NB2: TextArea 3 is for displaying the original non-sorted CEDICT data, it will be used, but you can empty it if you do not need to use it.
 <input type="button" value="Empty TextArea 3" name="btnEmpty3" onclick="emptyTextArea('emptyTA3')">
 </p>
 
-<p>NB3: TextArea 4 is for displaying the sorted CEDICT data, <span style="background-color:lime;">it is the default data to be used by program</span>, although not advisable, but you can empty it if you do not need to use it.
+<p class="txt1">NB3: TextArea 4 is for displaying the sorted CEDICT data, <span style="background-color:lime;">it is the default data to be used by program</span>, although not advisable, but you can empty it if you do not need to use it.
 <input type="button" value="Empty TextArea 4" name="btnEmpty4" onclick="emptyTextArea('emptyTA4')">
 </p><br />
 
-<p>After processing and sorting, the statistics of the selected CEDICT file will be shown below.<input type="button" value="CEDICT Statistics 统计数据" onclick="document.getElementById('cedictStat').innerHTML = showAboutCedict();"></p>
+<p class="txt1">After processing and sorting, the statistics of the selected CEDICT file will be shown below.<input type="button" value="CEDICT Statistics 统计数据" onclick="document.getElementById('cedictStat').innerHTML = showAboutCedict();"></p>
 
 <div id="cedictStat" style="overflow-x:auto;"></div> <!-- 16/Apr/2023 -->
 
@@ -1308,9 +1285,9 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 <hr>
 <p><br /></p>
 
-<h3 style="font-size:18px;color:magenta;text-decoration:underline;">两个额外文字区 (The 2 Extra TextAreas):</h3>
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">两个额外文字区 (The 2 Extra TextAreas)</h3>
 
-<p> <!-- 16/Apr/2023 -->
+<p class="txt1"> <!-- 16/Apr/2023 -->
 <span style="color:red;">Sample Cedict data</span> will open here (some pin yin "a" records only)
 <br><textarea readonly id="showSampleCedict" style="width:95%;height:150px;" placeholder="Note-6: Sample CEDICT File will open here. 汉英词典示范文件将在此打开。">啊 啊 [a1] /interjection of surprise/Ah!/Oh!/H1ci/
 阿 阿 [A1] /abbr. for Afghanistan 阿富汗[A1 fu4 han4]/H2ci/
@@ -1419,7 +1396,7 @@ tAofUserInputCedict.addEventListener("blur", function(event) {  // Use blur inst
 懊惱 懊恼 [ao4 nao3] /annoyed/vexed/upset/B4ci/</textarea>
 </p>
 
-<p> <!-- 16/Apr/2023 -->
+<p class="txt1"> <!-- 16/Apr/2023 -->
 <span style="color:red;">Temporary Cedict data created by user</span> will input here
 <br><textarea id="showTemporaryCedict" style="width:95%;height:150px;" placeholder="Note-7: Users can create and input temporary Cedict data here for immediate usage, (they have to save the data if they want to re-use them later). 用户们可以在此输入所创建的临时汉英词典资料以供即刻使用（若想以后再用，他们必须自行把这些资料存档）。"></textarea>
 <label id="remindUser" style="display:none;">Please be reminded for data entered in the above textarea: <span style=color:red;"">
@@ -1429,6 +1406,38 @@ Changes you made may not be saved.</span>To re-use, do remember to save a copy b
 <br />基于使用的器材（个人电脑或手机），本网页可能会或不会弹出提醒你为资料存档的讯息。<span style="color:magenta">要测试一下（用虚构资料），你可以重新下载(Reload)或点击一个链接离开本网页。</span>
 </label> <!-- 27/Apr/2023: The remindUser label will be displayed only when temporary Cedict data are created by user. -->
 </p>
+
+<p><br /></p>
+
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">重要事项 (Important Notes)</h3>
+
+<div style="overflow-x:auto;">
+<table class="cedictCopyrights" style="width:95%;">
+   <tr>
+      <td>
+         <p class="txt1">The CC-CEDICT database file use in this program is downloaded from: <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank">MDBG Chinese-English Dictionary - CC-CEDICT &#8599; </a> website. (Its Home page is: <a href="https://www.mdbg.net/" target="_blank">MDBG &#8599; </a>)</p>
+      </td>
+   </tr>
+   <tr>
+      <td>
+         <p class="txt1">Some basic ideas use in this CEDICT program were learned and copied/adapted from: <a href="http://www.mandarintools.com/worddict.html" target="_blank">www.mandarintools.com &#8599; </a> website. (Its Home page is: <a href="https://www.mandarintools.com/" target="_blank">On-line Chinese Tools &#8599; </a>)</p>
+      </td>
+   </tr>
+   <tr>
+      <td>
+         <p class="txt1">The Copyrights / License:</p>
+		 <p class="txt1">This CEDICT program is licensed under a <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License &#8599; </a>.</P>
+      </td>
+   </tr>
+</table>
+</div>
+
+<p><br /></p>
+
+<h3 style="font-size:18px;color:magenta;text-decoration:underline;">免责声明 (Disclaimer)</h3>
+<p class="txt1">Self Talk Zone openly disclaims any guarantee of the accuracy, reliability or error-free of this 《Chinese English Dictionary CC-CEDICT》 program and all the related information and materials, whether downloaded, generated or otherwise obtained through the use of this program. Thus, should users decide to use this program, it is done solely at their own discretion and risk.</p>
+
+</div>
 
 </body>
 </html>
